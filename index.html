@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Household Budget & Commitment Tracker</title>
+<title>Budget Tracker</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{--g1:#1b5e20;--g2:#2e7d32;--g3:#4caf50;--g4:#81c784;--g5:#c8e6c9;--g6:#e8f5e9;--w:#fff;--gr1:#333;--gr2:#555;--gr3:#888;--gr5:#e0e0e0;--gr6:#f5f5f5;--red:#e53935;--ora:#ff9800;--blu:#1976d2;--sidebar-w:260px}
 body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--gr6);color:var(--gr1);line-height:1.5;min-height:100vh}
-
-/* ===== LOGIN PAGE ===== */
 .login-page{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#1b5e20 0%,#2e7d32 30%,#4caf50 60%,#81c784 100%);padding:20px}
 .login-card{background:var(--w);border-radius:20px;padding:40px 32px;max-width:400px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3);text-align:center}
 .login-card .lc-icon{font-size:3.5rem;margin-bottom:12px}
@@ -27,26 +27,17 @@ body{font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;background:var(--gr
 .login-input-group input{width:100%;padding:12px 44px 12px 14px;border:2px solid var(--gr5);border-radius:10px;font-size:.95rem;transition:.2s;background:var(--gr6)}
 .login-input-group input:focus{outline:none;border-color:var(--g3);background:var(--w);box-shadow:0 0 0 4px rgba(76,175,80,.15)}
 .login-input-group .toggle-pw{position:absolute;right:12px;top:32px;background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--gr3);padding:4px}
-.login-input-group .toggle-pw:hover{color:var(--g2)}
 .login-input-group .pw-strength{height:4px;border-radius:2px;margin-top:6px;transition:all .3s}
 .login-remember{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:.82rem;color:var(--gr2)}
 .login-remember input{width:16px;height:16px;accent-color:var(--g3)}
-.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--g1),var(--g3));color:var(--w);border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:.2s;letter-spacing:.3px}
+.login-btn{width:100%;padding:14px;background:linear-gradient(135deg,var(--g1),var(--g3));color:var(--w);border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;transition:.2s}
 .login-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(27,94,32,.35)}
-.login-btn:active{transform:translateY(0)}
-.login-btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
-.login-footer{margin-top:24px;font-size:.72rem;color:var(--gr3);line-height:1.6}
-.login-footer a{color:var(--g2);text-decoration:none;font-weight:600}
+.login-footer{margin-top:24px;font-size:.72rem;color:var(--gr3)}
 .login-divider{display:flex;align-items:center;gap:12px;margin:20px 0;font-size:.75rem;color:var(--gr3)}
 .login-divider::before,.login-divider::after{content:'';flex:1;height:1px;background:var(--gr5)}
-.app-container{display:none}
-.app-container.show{display:block}
-
-/* ===== LOCK BUTTON ===== */
+.app-container{display:none}.app-container.show{display:block}
 .btn-lock{background:none;border:2px solid rgba(255,255,255,.4);color:var(--w);font-size:.9rem;width:34px;height:34px;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;flex-shrink:0}
 .btn-lock:hover{background:rgba(255,255,255,.15);border-color:var(--w)}
-
-/* ===== HEADER ===== */
 header{background:linear-gradient(135deg,var(--g1),var(--g2));color:var(--w);padding:12px 16px;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.2)}
 .header-row{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .header-left{display:flex;align-items:center;gap:10px}
@@ -60,12 +51,12 @@ header h1{font-size:1rem;font-weight:700}
 .lang-toggle button.active{background:rgba(255,255,255,.25);color:var(--w)}
 .active-tab-indicator{display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.15);padding:5px 12px;border-radius:8px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap}
 .active-tab-indicator:hover{background:rgba(255,255,255,.25)}
-.save-indicator{font-size:.7rem;padding:3px 8px;border-radius:4px;font-weight:600;transition:opacity .3s}
-.save-indicator.saving{background:var(--ora);color:var(--w);opacity:1}
-.save-indicator.saved{background:rgba(255,255,255,.2);color:var(--w);opacity:1}
-.save-indicator.hidden{opacity:0}
-
-/* ===== DRAWER ===== */
+.sync-badge{font-size:.65rem;padding:3px 8px;border-radius:10px;font-weight:700;cursor:pointer;transition:.2s;white-space:nowrap}
+.sync-badge.synced{background:rgba(255,255,255,.2);color:#a5d6a7}
+.sync-badge.syncing{background:var(--ora);color:var(--w);animation:pulse 1s infinite}
+.sync-badge.offline{background:rgba(255,255,255,.1);color:rgba(255,255,255,.5)}
+.sync-badge.error{background:var(--red);color:var(--w)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
 .drawer-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.45);z-index:200;opacity:0;visibility:hidden;transition:opacity .3s;backdrop-filter:blur(2px)}
 .drawer-overlay.open{opacity:1;visibility:visible}
 .drawer{position:fixed;top:0;left:0;bottom:0;width:var(--sidebar-w);background:var(--w);z-index:201;transform:translateX(-100%);transition:transform .3s cubic-bezier(.4,0,.2,1);display:flex;flex-direction:column;box-shadow:4px 0 20px rgba(0,0,0,.15)}
@@ -80,8 +71,6 @@ header h1{font-size:1rem;font-weight:700}
 .drawer-nav button.active{background:var(--g6);color:var(--g1);font-weight:700;border-left-color:var(--g3)}
 .drawer-nav button .nav-icon{font-size:1.2rem;width:28px;text-align:center;flex-shrink:0}
 .drawer-footer{padding:14px 20px;border-top:1px solid var(--gr5);font-size:.72rem;color:var(--gr3);text-align:center;flex-shrink:0}
-
-/* ===== CONTENT ===== */
 main{max-width:1000px;margin:0 auto;padding:16px}
 .tab-content{display:none}.tab-content.active{display:block}
 .card{background:var(--w);border-radius:12px;padding:20px;margin-bottom:16px;box-shadow:0 1px 4px rgba(0,0,0,.08);border:1px solid var(--gr5)}
@@ -132,13 +121,11 @@ main{max-width:1000px;margin:0 auto;padding:16px}
 .collapse-total{font-weight:700;font-size:.92rem;color:var(--g2);white-space:nowrap}
 .collapse-total.gold{color:#e65100}
 .collapse-count{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:12px;background:var(--g3);color:var(--w);font-size:.68rem;font-weight:700}
-.collapse-count.zero{background:var(--gr5);color:var(--gr3)}
-.collapse-count.gold{background:var(--ora)}
+.collapse-count.zero{background:var(--gr5);color:var(--gr3)}.collapse-count.gold{background:var(--ora)}
 .collapse-body{max-height:0;overflow:hidden;transition:max-height .35s cubic-bezier(.4,0,.2,1),padding .25s}
 .collapse-body.open{max-height:3000px;padding:8px 12px 12px}
 .entry-item{display:flex;align-items:center;padding:8px 10px;font-size:.8rem;border-bottom:1px solid var(--gr5);gap:6px;flex-wrap:wrap;transition:background .15s}
-.entry-item:last-child{border-bottom:none}
-.entry-item:hover{background:var(--g6)}
+.entry-item:last-child{border-bottom:none}.entry-item:hover{background:var(--g6)}
 .entry-item .ei-amount{font-weight:600;color:var(--g2);white-space:nowrap;min-width:75px}
 .entry-item .ei-nota{color:var(--gr2);font-style:italic;flex:1;min-width:50px;word-break:break-word}
 .entry-item .ei-date{color:var(--gr3);font-size:.72rem;white-space:nowrap}
@@ -186,13 +173,13 @@ table.log-table tr:hover{background:var(--g5)}
 .modal{background:var(--w);border-radius:14px;padding:24px;max-width:420px;width:100%;box-shadow:0 8px 30px rgba(0,0,0,.25)}
 .modal h3{color:var(--g2);margin-bottom:16px;font-size:1.05rem;display:flex;align-items:center;gap:8px}
 .modal .modal-actions{display:flex;gap:10px;margin-top:18px;justify-content:flex-end;flex-wrap:wrap}
-
-/* ===== SECURITY SETTINGS ===== */
-.security-card{background:linear-gradient(135deg,#e3f2fd,#bbdefb);border:1px solid #90caf9;border-radius:12px;padding:20px;margin-bottom:16px}
-.security-card h3{color:#1565c0;margin-bottom:12px}
-.lock-info{display:flex;align-items:center;gap:10px;padding:12px;background:var(--w);border-radius:8px;margin-bottom:10px;font-size:.84rem}
-.lock-info .li-icon{font-size:1.5rem}
-
+.cloud-card{background:linear-gradient(135deg,#e3f2fd,#bbdefb);border:1px solid #90caf9;border-radius:12px;padding:20px;margin-bottom:16px}
+.cloud-card h3{color:#1565c0;margin-bottom:12px;font-size:.95rem}
+.cloud-status{display:flex;align-items:center;gap:10px;padding:12px;background:var(--w);border-radius:8px;margin-bottom:12px}
+.cloud-status .cs-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.cloud-status .cs-dot.online{background:#4caf50}.cloud-status .cs-dot.offline{background:var(--gr5)}
+.security-card{background:linear-gradient(135deg,#e8f5e9,#c8e6c9);border:1px solid #a5d6a7;border-radius:12px;padding:20px;margin-bottom:16px}
+.security-card h3{color:var(--g1);margin-bottom:12px}
 @media(max-width:600px){
 header h1{font-size:.85rem}.header-right{gap:4px}
 .metric-grid{grid-template-columns:repeat(2,1fr);gap:8px}
@@ -206,33 +193,23 @@ main{padding:10px}.card{padding:14px;border-radius:10px}
 .active-tab-indicator{font-size:.72rem;padding:4px 8px}
 .lang-toggle button{padding:3px 7px;font-size:.68rem}
 .collapse-name{font-size:.8rem}.collapse-total{font-size:.84rem}.modal{padding:18px}
-.login-card{padding:28px 22px}
-.login-card h1{font-size:1.1rem}
+.login-card{padding:28px 22px}.login-card h1{font-size:1.1rem}
 }
-@media print{
-header,.hamburger,.drawer,.drawer-overlay,.btn,.btn-add-circle,.btn-edit,.add-form,.person-toggle,.toast,.active-tab-indicator,.lang-toggle,.expand-controls,.modal-overlay,.save-indicator,.btn-lock,.login-page{display:none!important}
-.tab-content{display:block!important}.app-container{display:block!important}body{background:#fff}
-.card{box-shadow:none;border:1px solid #ccc;break-inside:avoid}
-.collapse-body{max-height:none!important;padding:8px 12px!important}
-}
+@media print{header,.hamburger,.drawer,.drawer-overlay,.btn,.btn-add-circle,.btn-edit,.add-form,.person-toggle,.toast,.active-tab-indicator,.lang-toggle,.expand-controls,.modal-overlay,.btn-lock,.login-page,.sync-badge{display:none!important}.tab-content{display:block!important}.app-container{display:block!important}body{background:#fff}.card{box-shadow:none;border:1px solid #ccc;break-inside:avoid}.collapse-body{max-height:none!important;padding:8px 12px!important}}
 </style>
 </head>
 <body>
-
-<!-- ===== LOGIN PAGE ===== -->
 <div class="login-page" id="loginPage">
 <div class="login-card">
 <div class="lc-icon">🔐</div>
 <h1 id="loginTitle">Budget Tracker</h1>
-<p class="lc-sub" id="loginSub">Masukkan kata laluan untuk akses</p>
+<p class="lc-sub" id="loginSub">Masukkan kata laluan</p>
 <div class="lc-error" id="loginError"></div>
 <div class="lc-success" id="loginSuccess"></div>
 <div id="loginForm"></div>
-<div class="login-footer" id="loginFooter">🔒 Data anda dilindungi dan disimpan secara tempatan</div>
+<div class="login-footer" id="loginFooter">🔒 Data dilindungi</div>
 </div>
 </div>
-
-<!-- ===== APP ===== -->
 <div class="app-container" id="appContainer">
 <header>
 <div class="header-row">
@@ -241,8 +218,8 @@ header,.hamburger,.drawer,.drawer-overlay,.btn,.btn-add-circle,.btn-edit,.add-fo
 <h1 id="headerTitle">🏠 Budget Tracker</h1>
 </div>
 <div class="header-right">
-<span class="save-indicator hidden" id="saveIndicator">💾</span>
-<button class="btn-lock" onclick="lockApp()" title="Lock" id="lockBtn">🔒</button>
+<span class="sync-badge offline" id="syncBadge" onclick="manualSync()">☁️ —</span>
+<button class="btn-lock" onclick="lockApp()" id="lockBtn">🔒</button>
 <div class="lang-toggle">
 <button id="langBM" class="active" onclick="setLang('bm')">BM</button>
 <button id="langEN" onclick="setLang('en')">EN</button>
@@ -260,249 +237,138 @@ header,.hamburger,.drawer,.drawer-overlay,.btn,.btn-add-circle,.btn-edit,.add-fo
 </div>
 <main id="mainContent"></main>
 </div>
-
 <div class="toast" id="toast"></div>
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
 <div class="modal" id="modalContent"></div>
 </div>
 
 <script>
-// ==================== AUTH SYSTEM ====================
-const AUTH_KEY='hbudget_auth';
-const SESSION_KEY='hbudget_session';
-let inactivityTimer=null;
-const AUTO_LOCK_MIN=15;
+// ==================== FIREBASE CLOUD SYNC ====================
+const FB_CONFIG_KEY='hbudget_fb_config';
+let fbApp=null,fbDb=null,fbRef=null,fbConnected=false,syncTimer=null,isSyncing=false;
 
-async function hashPassword(pw){
-const encoder=new TextEncoder();
-const data=encoder.encode(pw+'_hbudget_salt_2024');
-const hash=await crypto.subtle.digest('SHA-256',data);
-return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+function getFbConfig(){try{let c=localStorage.getItem(FB_CONFIG_KEY);return c?JSON.parse(c):null}catch(e){return null}}
+function setFbConfig(cfg){localStorage.setItem(FB_CONFIG_KEY,JSON.stringify(cfg))}
+
+function initFirebase(){
+let cfg=getFbConfig();
+if(!cfg||!cfg.databaseURL)return;
+try{
+if(fbApp){try{fbApp.delete()}catch(e){}}
+fbApp=firebase.initializeApp({
+apiKey:cfg.apiKey||'',
+databaseURL:cfg.databaseURL,
+projectId:cfg.projectId||''
+},'budgetApp');
+fbDb=firebase.database(fbApp);
+let auth=getAuth();
+let userId=auth?auth.hash.substring(0,16):'default';
+fbRef=fbDb.ref('budgetData/'+userId);
+fbDb.ref('.info/connected').on('value',snap=>{
+fbConnected=snap.val()===true;
+updateSyncBadge(fbConnected?'online':'offline');
+if(fbConnected)pullFromCloud();
+});
+console.log('Firebase initialized');
+}catch(e){console.error('Firebase init error:',e);updateSyncBadge('error')}
 }
 
-function getAuth(){
-try{let a=localStorage.getItem(AUTH_KEY);return a?JSON.parse(a):null}catch(e){return null}
+function updateSyncBadge(state,text){
+let el=document.getElementById('syncBadge');if(!el)return;
+el.className='sync-badge';
+if(state==='synced'){el.classList.add('synced');el.textContent='☁️ ✅'}
+else if(state==='syncing'){el.classList.add('syncing');el.textContent='☁️ ...'}
+else if(state==='online'){el.classList.add('synced');el.textContent='☁️ Online'}
+else if(state==='error'){el.classList.add('error');el.textContent='☁️ ❌'}
+else{el.classList.add('offline');el.textContent='☁️ —'}
 }
-function setAuth(obj){localStorage.setItem(AUTH_KEY,JSON.stringify(obj))}
 
-function getSession(){
-try{let s=localStorage.getItem(SESSION_KEY);if(!s)return null;let parsed=JSON.parse(s);
-if(parsed.expires&&Date.now()>parsed.expires)return null;
-return parsed}catch(e){return null}
+function pushToCloud(){
+if(!fbRef||!fbConnected||isSyncing)return;
+isSyncing=true;updateSyncBadge('syncing');
+let payload=JSON.parse(JSON.stringify(data));
+payload._cloudTs=Date.now();
+fbRef.set(payload).then(()=>{
+updateSyncBadge('synced');
+isSyncing=false;
+}).catch(e=>{
+console.error('Push error:',e);
+updateSyncBadge('error');
+isSyncing=false;
+});
 }
-function setSession(remember){
-let expires=remember?Date.now()+(7*24*60*60*1000):Date.now()+(2*60*60*1000);
-localStorage.setItem(SESSION_KEY,JSON.stringify({active:true,expires,ts:Date.now()}))
+
+function pullFromCloud(){
+if(!fbRef||isSyncing)return;
+fbRef.once('value').then(snap=>{
+let cloudData=snap.val();
+if(!cloudData||!cloudData.months)return;
+let localTs=data._lastSaved||0;
+let cloudTs=cloudData._cloudTs||0;
+if(cloudTs>localTs){
+console.log('Cloud data newer, merging...');
+data=cloudData;
+if(data.lang)lang=data.lang;
+safeSave();
+initMonth(currentMonth);
+renderActiveTab();
+showToast('☁️ Data dari cloud dimuat');
 }
+updateSyncBadge('synced');
+}).catch(e=>{console.error('Pull error:',e);updateSyncBadge('error')});
+}
+
+function schedulePush(){
+clearTimeout(syncTimer);
+syncTimer=setTimeout(()=>pushToCloud(),5000);
+}
+
+function manualSync(){
+if(!fbRef){showToast('⚠️ Firebase belum disetup');return}
+if(!fbConnected){showToast('⚠️ Tiada internet');return}
+pushToCloud();
+setTimeout(()=>pullFromCloud(),2000);
+showToast('☁️ Syncing...');
+}
+
+// ==================== AUTH ====================
+const AUTH_KEY='hbudget_auth',SESSION_KEY='hbudget_session';
+let inactivityTimer=null;const AUTO_LOCK_MIN=15;
+
+async function hashPassword(pw){const enc=new TextEncoder();const d=enc.encode(pw+'_hbudget_salt_2024');const h=await crypto.subtle.digest('SHA-256',d);return Array.from(new Uint8Array(h)).map(b=>b.toString(16).padStart(2,'0')).join('')}
+function getAuth(){try{let a=localStorage.getItem(AUTH_KEY);return a?JSON.parse(a):null}catch(e){return null}}
+function setAuth(o){localStorage.setItem(AUTH_KEY,JSON.stringify(o))}
+function getSession(){try{let s=localStorage.getItem(SESSION_KEY);if(!s)return null;let p=JSON.parse(s);if(p.expires&&Date.now()>p.expires)return null;return p}catch(e){return null}}
+function setSession(rem){localStorage.setItem(SESSION_KEY,JSON.stringify({active:true,expires:Date.now()+(rem?7*24*3600000:2*3600000),ts:Date.now()}))}
 function clearSession(){localStorage.removeItem(SESSION_KEY)}
 
-function showLoginPage(){
-document.getElementById('loginPage').style.display='flex';
-document.getElementById('appContainer').classList.remove('show');
-let auth=getAuth();
-if(!auth){renderSetupForm()}else{renderLoginForm()}
-}
+function showLoginPage(){document.getElementById('loginPage').style.display='flex';document.getElementById('appContainer').classList.remove('show');let a=getAuth();if(!a)renderSetupForm();else renderLoginForm()}
+function renderSetupForm(){document.getElementById('loginTitle').textContent='🔐 Buat Kata Laluan';document.getElementById('loginSub').textContent='Tetapkan kata laluan';document.getElementById('loginForm').innerHTML=`<div class="login-input-group"><label>Kata Laluan Baru</label><input type="password" id="setupPw1" placeholder="Min 4 aksara" onkeyup="checkStr(this.value)" onkeydown="if(event.key==='Enter')document.getElementById('setupPw2').focus()"><button class="toggle-pw" onclick="togPw('setupPw1',this)">👁️</button><div class="pw-strength" id="pwStr" style="background:var(--gr5)"></div></div><div class="login-input-group"><label>Sahkan</label><input type="password" id="setupPw2" placeholder="Masuk semula" onkeydown="if(event.key==='Enter')doSetup()"><button class="toggle-pw" onclick="togPw('setupPw2',this)">👁️</button></div><div class="login-remember"><input type="checkbox" id="setupRem" checked><label for="setupRem">Ingat 7 hari</label></div><button class="login-btn" onclick="doSetup()">🔐 Tetapkan & Masuk</button>`;setTimeout(()=>document.getElementById('setupPw1').focus(),300)}
+function renderLoginForm(){document.getElementById('loginTitle').textContent='🔐 Budget Tracker';document.getElementById('loginSub').textContent='Masukkan kata laluan';document.getElementById('loginError').classList.remove('show');document.getElementById('loginSuccess').classList.remove('show');document.getElementById('loginForm').innerHTML=`<div class="login-input-group"><label>Kata Laluan</label><input type="password" id="loginPw" placeholder="Kata laluan" onkeydown="if(event.key==='Enter')doLogin()"><button class="toggle-pw" onclick="togPw('loginPw',this)">👁️</button></div><div class="login-remember"><input type="checkbox" id="loginRem" checked><label for="loginRem">Ingat 7 hari</label></div><button class="login-btn" onclick="doLogin()">🔓 Masuk</button><div class="login-divider">atau</div><button class="btn btn-outline btn-sm" onclick="showReset()" style="width:100%;justify-content:center;color:var(--red);border-color:var(--red)">🗑️ Reset Semua</button>`;setTimeout(()=>document.getElementById('loginPw').focus(),300)}
 
-function renderSetupForm(){
-document.getElementById('loginTitle').textContent='🔐 Buat Kata Laluan';
-document.getElementById('loginSub').textContent='Tetapkan kata laluan untuk melindungi data anda';
-document.getElementById('loginForm').innerHTML=`
-<div class="login-input-group">
-<label>Kata Laluan Baru</label>
-<input type="password" id="setupPw1" placeholder="Minimum 4 aksara" onkeyup="checkPwStrength(this.value)" onkeydown="if(event.key==='Enter')document.getElementById('setupPw2').focus()">
-<button class="toggle-pw" onclick="togglePwVis('setupPw1',this)">👁️</button>
-<div class="pw-strength" id="pwStrength" style="background:var(--gr5)"></div>
-</div>
-<div class="login-input-group">
-<label>Sahkan Kata Laluan</label>
-<input type="password" id="setupPw2" placeholder="Masukkan semula" onkeydown="if(event.key==='Enter')doSetup()">
-<button class="toggle-pw" onclick="togglePwVis('setupPw2',this)">👁️</button>
-</div>
-<div class="login-remember">
-<input type="checkbox" id="setupRemember" checked>
-<label for="setupRemember">Ingat saya selama 7 hari</label>
-</div>
-<button class="login-btn" onclick="doSetup()">🔐 Tetapkan & Masuk</button>`;
-document.getElementById('loginFooter').textContent='🔒 Kata laluan di-hash (SHA-256) — tiada siapa boleh lihat';
-setTimeout(()=>document.getElementById('setupPw1').focus(),300);
-}
+async function doSetup(){let p1=document.getElementById('setupPw1').value,p2=document.getElementById('setupPw2').value,err=document.getElementById('loginError'),suc=document.getElementById('loginSuccess');err.classList.remove('show');suc.classList.remove('show');if(p1.length<4){err.textContent='⚠️ Min 4 aksara';err.classList.add('show');return}if(p1!==p2){err.textContent='⚠️ Tidak sepadan';err.classList.add('show');return}setAuth({hash:await hashPassword(p1),created:Date.now()});setSession(document.getElementById('setupRem').checked);suc.textContent='✅ Berjaya!';suc.classList.add('show');setTimeout(enterApp,500)}
+async function doLogin(){let pw=document.getElementById('loginPw').value,err=document.getElementById('loginError');err.classList.remove('show');if(!pw){err.textContent='⚠️ Masukkan kata laluan';err.classList.add('show');return}let h=await hashPassword(pw),a=getAuth();if(!a||h!==a.hash){err.textContent='❌ Salah';err.classList.add('show');document.getElementById('loginPw').value='';return}setSession(document.getElementById('loginRem').checked);enterApp()}
+function showReset(){if(!confirm('⚠️ PADAM kata laluan & SEMUA data?'))return;if(!confirm('PASTI?'))return;localStorage.removeItem(AUTH_KEY);localStorage.removeItem(SESSION_KEY);localStorage.removeItem(STORE_KEY);localStorage.removeItem(BACKUP_KEY);renderSetupForm();document.getElementById('loginSuccess').textContent='🔄 Reset selesai';document.getElementById('loginSuccess').classList.add('show')}
+function enterApp(){document.getElementById('loginPage').style.display='none';document.getElementById('appContainer').classList.add('show');startInact();initApp()}
+function lockApp(){safeSave();pushToCloud();clearSession();stopInact();document.getElementById('appContainer').classList.remove('show');document.getElementById('loginPage').style.display='flex';renderLoginForm()}
+function togPw(id,b){let i=document.getElementById(id);i.type=i.type==='password'?'text':'password';b.textContent=i.type==='password'?'👁️':'🙈'}
+function checkStr(pw){let b=document.getElementById('pwStr');if(!b)return;let s=0;if(pw.length>=4)s++;if(pw.length>=8)s++;if(/[A-Z]/.test(pw))s++;if(/[0-9]/.test(pw))s++;if(/[^a-zA-Z0-9]/.test(pw))s++;let c=['#e53935','#ff9800','#ff9800','#4caf50','#1b5e20'],w=['20%','40%','60%','80%','100%'];let i=Math.min(s,4);b.style.width=w[i];b.style.background=c[i]}
+function startInact(){stopInact();['mousedown','mousemove','keydown','touchstart','scroll'].forEach(e=>document.addEventListener(e,resetInact,{passive:true}));resetInact()}
+function stopInact(){clearTimeout(inactivityTimer);['mousedown','mousemove','keydown','touchstart','scroll'].forEach(e=>document.removeEventListener(e,resetInact))}
+function resetInact(){clearTimeout(inactivityTimer);inactivityTimer=setTimeout(()=>{showToast('🔒 Auto-lock');setTimeout(lockApp,1500)},AUTO_LOCK_MIN*60000)}
+async function showChangePw(){openModal(`<h3>🔑 Tukar Kata Laluan</h3><div class="form-group" style="margin-bottom:10px"><label>Semasa</label><input type="password" id="cpw_old"></div><div class="form-group" style="margin-bottom:10px"><label>Baru</label><input type="password" id="cpw_new"></div><div class="form-group" style="margin-bottom:10px"><label>Sahkan</label><input type="password" id="cpw_con"></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Batal</button><button class="btn btn-primary" onclick="doChangePw()">💾 Simpan</button></div>`)}
+async function doChangePw(){let o=document.getElementById('cpw_old').value,n=document.getElementById('cpw_new').value,c=document.getElementById('cpw_con').value,a=getAuth();if(!a)return;if(await hashPassword(o)!==a.hash){showToast('❌ Salah');return}if(n.length<4){showToast('⚠️ Min 4');return}if(n!==c){showToast('⚠️ Tak sepadan');return}setAuth({hash:await hashPassword(n),created:Date.now()});closeModal();showToast('✅ Ditukar');initFirebase()}
 
-function renderLoginForm(){
-document.getElementById('loginTitle').textContent='🔐 Budget Tracker';
-document.getElementById('loginSub').textContent='Masukkan kata laluan untuk akses';
-document.getElementById('loginError').classList.remove('show');
-document.getElementById('loginSuccess').classList.remove('show');
-document.getElementById('loginForm').innerHTML=`
-<div class="login-input-group">
-<label>Kata Laluan</label>
-<input type="password" id="loginPw" placeholder="Masukkan kata laluan" onkeydown="if(event.key==='Enter')doLogin()">
-<button class="toggle-pw" onclick="togglePwVis('loginPw',this)">👁️</button>
-</div>
-<div class="login-remember">
-<input type="checkbox" id="loginRemember" checked>
-<label for="loginRemember">Ingat saya selama 7 hari</label>
-</div>
-<button class="login-btn" onclick="doLogin()">🔓 Masuk</button>
-<div class="login-divider">atau</div>
-<button class="btn btn-outline btn-sm" onclick="showResetConfirm()" style="width:100%;justify-content:center;color:var(--red);border-color:var(--red)">🗑️ Lupa? Reset Kata Laluan & Data</button>`;
-document.getElementById('loginFooter').textContent='🔒 Data dilindungi dan disimpan secara tempatan';
-setTimeout(()=>document.getElementById('loginPw').focus(),300);
-}
-
-async function doSetup(){
-let pw1=document.getElementById('setupPw1').value;
-let pw2=document.getElementById('setupPw2').value;
-let errEl=document.getElementById('loginError');
-let sucEl=document.getElementById('loginSuccess');
-errEl.classList.remove('show');sucEl.classList.remove('show');
-if(pw1.length<4){errEl.textContent='⚠️ Minimum 4 aksara';errEl.classList.add('show');return}
-if(pw1!==pw2){errEl.textContent='⚠️ Kata laluan tidak sepadan';errEl.classList.add('show');return}
-let hash=await hashPassword(pw1);
-setAuth({hash,created:Date.now()});
-let remember=document.getElementById('setupRemember').checked;
-setSession(remember);
-sucEl.textContent='✅ Kata laluan ditetapkan!';sucEl.classList.add('show');
-setTimeout(()=>enterApp(),500);
-}
-
-async function doLogin(){
-let pw=document.getElementById('loginPw').value;
-let errEl=document.getElementById('loginError');
-errEl.classList.remove('show');
-if(!pw){errEl.textContent='⚠️ Masukkan kata laluan';errEl.classList.add('show');return}
-let hash=await hashPassword(pw);
-let auth=getAuth();
-if(!auth||hash!==auth.hash){
-errEl.textContent='❌ Kata laluan salah';errEl.classList.add('show');
-document.getElementById('loginPw').value='';
-document.getElementById('loginPw').focus();
-return}
-let remember=document.getElementById('loginRemember').checked;
-setSession(remember);
-enterApp();
-}
-
-function showResetConfirm(){
-let errEl=document.getElementById('loginError');
-if(!confirm('⚠️ Ini akan PADAM kata laluan DAN semua data budget. Teruskan?'))return;
-if(!confirm('PASTI? Semua data akan hilang selamanya.'))return;
-localStorage.removeItem(AUTH_KEY);
-localStorage.removeItem(SESSION_KEY);
-localStorage.removeItem(STORE_KEY);
-localStorage.removeItem(BACKUP_KEY);
-errEl.classList.remove('show');
-renderSetupForm();
-document.getElementById('loginSuccess').textContent='🔄 Reset selesai. Sila buat kata laluan baru.';
-document.getElementById('loginSuccess').classList.add('show');
-}
-
-function enterApp(){
-document.getElementById('loginPage').style.display='none';
-document.getElementById('appContainer').classList.add('show');
-startInactivityTimer();
-initApp();
-}
-
-function lockApp(){
-safeSave();
-clearSession();
-stopInactivityTimer();
-document.getElementById('appContainer').classList.remove('show');
-document.getElementById('loginPage').style.display='flex';
-renderLoginForm();
-}
-
-function togglePwVis(inputId,btn){
-let inp=document.getElementById(inputId);
-if(inp.type==='password'){inp.type='text';btn.textContent='🙈'}
-else{inp.type='password';btn.textContent='👁️'}
-}
-
-function checkPwStrength(pw){
-let bar=document.getElementById('pwStrength');
-if(!bar)return;
-let score=0;
-if(pw.length>=4)score++;if(pw.length>=8)score++;
-if(/[A-Z]/.test(pw))score++;if(/[0-9]/.test(pw))score++;
-if(/[^a-zA-Z0-9]/.test(pw))score++;
-let colors=['#e53935','#ff9800','#ff9800','#4caf50','#1b5e20'];
-let widths=['20%','40%','60%','80%','100%'];
-let i=Math.min(score,4);
-bar.style.width=widths[i];bar.style.background=colors[i];
-}
-
-// ===== INACTIVITY AUTO-LOCK =====
-function startInactivityTimer(){
-stopInactivityTimer();
-const events=['mousedown','mousemove','keydown','touchstart','scroll','click'];
-events.forEach(e=>document.addEventListener(e,resetInactivity,{passive:true}));
-resetInactivity();
-}
-function stopInactivityTimer(){
-clearTimeout(inactivityTimer);
-const events=['mousedown','mousemove','keydown','touchstart','scroll','click'];
-events.forEach(e=>document.removeEventListener(e,resetInactivity));
-}
-function resetInactivity(){
-clearTimeout(inactivityTimer);
-inactivityTimer=setTimeout(()=>{
-showToast('🔒 Auto-lock: Tiada aktiviti '+AUTO_LOCK_MIN+' minit');
-setTimeout(()=>lockApp(),1500);
-},AUTO_LOCK_MIN*60*1000);
-}
-
-// ===== CHANGE PASSWORD (from settings) =====
-async function showChangePw(){
-let E=lang==='bm';
-openModal(`<h3>🔑 ${E?'Tukar Kata Laluan':'Change Password'}</h3>
-<div class="form-group" style="margin-bottom:10px"><label>${E?'Kata Laluan Semasa':'Current Password'}</label><input type="password" id="cpw_old"></div>
-<div class="form-group" style="margin-bottom:10px"><label>${E?'Kata Laluan Baru':'New Password'}</label><input type="password" id="cpw_new"></div>
-<div class="form-group" style="margin-bottom:10px"><label>${E?'Sahkan Baru':'Confirm New'}</label><input type="password" id="cpw_confirm"></div>
-<div class="modal-actions">
-<button class="btn btn-outline" onclick="closeModal()">${E?'Batal':'Cancel'}</button>
-<button class="btn btn-primary" onclick="doChangePw()">💾 ${E?'Simpan':'Save'}</button></div>`);
-}
-async function doChangePw(){
-let old=document.getElementById('cpw_old').value;
-let nw=document.getElementById('cpw_new').value;
-let confirm=document.getElementById('cpw_confirm').value;
-let auth=getAuth();if(!auth)return;
-let oldHash=await hashPassword(old);
-if(oldHash!==auth.hash){showToast('❌ Kata laluan semasa salah');return}
-if(nw.length<4){showToast('⚠️ Minimum 4 aksara');return}
-if(nw!==confirm){showToast('⚠️ Tidak sepadan');return}
-let newHash=await hashPassword(nw);
-setAuth({hash:newHash,created:Date.now()});
-closeModal();showToast('✅ Kata laluan ditukar');
-}
-
-// ==================== DATA PROTECTION ====================
-const STORE_KEY='hbudget_v8';
-const BACKUP_KEY='hbudget_v8_backup';
+// ==================== DATA ENGINE ====================
+const STORE_KEY='hbudget_v9',BACKUP_KEY='hbudget_v9_backup';
 let saveTimr=null,isSaving=false,renderTimr=null;
 
-function safeSave(){
-if(isSaving)return;isSaving=true;showSaveInd('saving');
-try{let json=JSON.stringify(data);if(!json||json.length<10){isSaving=false;return}
-let existing=localStorage.getItem(STORE_KEY);if(existing&&existing.length>50)localStorage.setItem(BACKUP_KEY,existing);
-localStorage.setItem(STORE_KEY,json);showSaveInd('saved')}catch(e){console.error('Save error:',e);showToast('⚠️ Storage error')}
-isSaving=false}
-function debouncedSave(){clearTimeout(saveTimr);saveTimr=setTimeout(safeSave,300)}
-function saveData(){data.lang=lang;data._lastSaved=Date.now();debouncedSave()}
-function saveDataNow(){data.lang=lang;data._lastSaved=Date.now();safeSave()}
-function showSaveInd(s){let el=document.getElementById('saveIndicator');if(!el)return;el.className='save-indicator';if(s==='saving'){el.textContent='💾 ...';el.classList.add('saving')}else{el.textContent='✅';el.classList.add('saved');setTimeout(()=>{el.classList.add('hidden');el.classList.remove('saved')},1500)}}
+function safeSave(){if(isSaving)return;isSaving=true;try{let j=JSON.stringify(data);if(!j||j.length<10){isSaving=false;return}let ex=localStorage.getItem(STORE_KEY);if(ex&&ex.length>50)localStorage.setItem(BACKUP_KEY,ex);localStorage.setItem(STORE_KEY,j)}catch(e){console.error(e)}isSaving=false}
+function saveData(){data.lang=lang;data._lastSaved=Date.now();clearTimeout(saveTimr);saveTimr=setTimeout(()=>{safeSave();schedulePush()},300)}
+function saveDataNow(){data.lang=lang;data._lastSaved=Date.now();safeSave();schedulePush()}
+function loadData(){try{let d=localStorage.getItem(STORE_KEY);if(d){let p=JSON.parse(d);if(p&&p.months){data=p;if(data.lang)lang=data.lang;return}}}catch(e){}try{let b=localStorage.getItem(BACKUP_KEY);if(b){let p=JSON.parse(b);if(p&&p.months){data=p;if(data.lang)lang=data.lang;return}}}catch(e){}data={categories:{komitmen:[...DEF_KOM],perbelanjaan:[...DEF_EXP]},months:{},lang:'bm'}}
 
-function loadData(){try{let d=localStorage.getItem(STORE_KEY);if(d){let p=JSON.parse(d);if(p&&p.months){data=p;if(data.lang)lang=data.lang;return}}}catch(e){}
-try{let b=localStorage.getItem(BACKUP_KEY);if(b){let p=JSON.parse(b);if(p&&p.months){data=p;if(data.lang)lang=data.lang;return}}}catch(e){}
-data={categories:{komitmen:[...DEF_KOM],perbelanjaan:[...DEF_EXP]},months:{},lang:'bm'}}
-
-// ==================== LANGUAGE ====================
-const L={
-bm:{appTitle:'🏠 Budget Tracker',menuTitle:'🏠 Menu',footerText:'v8.0 • Data dalam pelayar',tabs:{dashboard:'Dashboard',pendapatan:'Pendapatan',komitmen:'Komitmen',perbelanjaan:'Perbelanjaan',quickadd:'Quick Add',log:'Log',simulasi:'Simulasi',carta:'Carta',kategori:'Kategori',eksport:'Eksport'},person:{suami:'Suami',isteri:'Isteri',husband:'👨 Suami',wife:'👩 Isteri',family:'👨‍👩‍👧‍👦'},dashboard:{title:'📊 Dashboard',incS:'Pendapatan Suami',incW:'Pendapatan Isteri',incF:'Jumlah Pendapatan',komS:'Komitmen Suami',komW:'Komitmen Isteri',expS:'Belanja Suami',expW:'Belanja Isteri',balS:'Baki Suami',balW:'Baki Isteri',balF:'Baki Keluarga'},health:{title:'🏥 Financial Health',usage:'Penggunaan',status:'Status',danger:'⚠️ BAHAYA',warning:'⚡ AMARAN',healthy:'✅ SIHAT',income:'Pendapatan',commitment:'Komitmen',expense:'Perbelanjaan',balance:'Baki'},income:{title:'💰 Pendapatan',salary:'💼 Gaji Bersih',salaryLabel:'Gaji (RM)',totalSalary:'Gaji',extra:'🎁 Wang Tambahan',extraTotal:'Wang Tambahan',grandTotal:'💰 JUMLAH',expandAll:'📂 Buka',collapseAll:'📁 Tutup',amtLabel:'Amaun (RM)',notaLabel:'Nota',notaPlaceholder:'cth: Bonus',dateLabel:'📅 Tarikh',add:'Tambah',cancel:'Batal',noEntries:'Tiada rekod',cats:['Duit Hadiah','Jual Barang','Pulangan/Refund','Lain-lain']},kom:{title:'📋 Komitmen',hint:'💡 Tarikh boleh dipilih manual.',amountLabel:'Amaun (RM)',notaLabel:'Nota',notaPlaceholder:'cth: Maybank',dateLabel:'📅 Tarikh',updated:'Dikemaskini',total:'📋 JUMLAH KOMITMEN',expandAll:'📂 Buka',collapseAll:'📁 Tutup'},exp:{title:'🛒 Perbelanjaan',amountLabel:'Amaun (RM)',notaLabel:'Nota',notaPlaceholder:'cth: Shell',dateLabel:'📅 Tarikh',add:'Tambah',cancel:'Batal',total:'🛒 JUMLAH BELANJA',expandAll:'📂 Buka',collapseAll:'📁 Tutup',noEntries:'Tiada rekod'},quick:{title:'⚡ Quick Add',catLabel:'Kategori',amountLabel:'Amaun (RM)',notaLabel:'Nota (WAJIB)',notaPlaceholder:'cth: Petronas',dateLabel:'📅 Tarikh',addBtn:'⚡ Tambah',resetBtn:'🔄 Reset',shortTitle:'🔖 Pintasan',shortDesc:'Klik tambah terus:',shorts:[{l:'☕ Kopi RM5',n:'Kopi'},{l:'🍔 Makan RM15',n:'Makan'},{l:'⛽ Minyak RM50',n:'Minyak'},{l:'⛽ RM100',n:'Penuh'},{l:'🛒 Groceri RM50',n:'Groceri'},{l:'📦 Online RM30',n:'Online'}]},log:{title:'📝 Log',filterAll:'📋 Semua',filterInc:'🎁 Tambahan',filterKom:'📋 Komitmen',filterExp:'🛒 Belanja',totalInc:'Tambahan',totalKom:'Komitmen',totalExp:'Belanja',noRecord:'Tiada rekod',thType:'Jenis',thWho:'Siapa',thCat:'Kategori',thAmt:'Amaun',thNota:'Nota',thDate:'Tarikh',thTime:'Masa',badgeInc:'🎁 Tambahan',badgeKom:'📋 Komitmen',badgeExp:'🛒 Belanja',showMore:'Lagi',showLess:'Tutup',showing:'Tunjuk',of:'/',records:'rekod'},sim:{title:'💡 Simulasi',desc:'✅ Tick untuk kira penjimatan',noData:'Tiada data',savLabel:'💰 Penjimatan'},chart:{title:'📈 Carta',pieTitle:'Perbelanjaan',barTitle:'Suami vs Isteri',lineTitle:'Trend Jan-Dis',income:'Pendapatan',spending:'Pengeluaran',balance:'Baki'},cat:{titleKom:'⚙️ Kategori Komitmen',titleExp:'⚙️ Kategori Perbelanjaan',placeholder:'Kategori baru',addBtn:'+ Tambah',editPrompt:'Edit:'},exportTab:{title:'📤 Eksport',desc:'Eksport dengan tarikh & nota.',manageTitle:'🔄 Data',backup:'💾 Backup',import:'📂 Import',resetAll:'🗑️ Reset',recoverBtn:'🔄 Pulih'},security:{title:'🔐 Keselamatan',changePw:'🔑 Tukar Kata Laluan',lockNow:'🔒 Kunci Sekarang',autoLock:'Auto-kunci selepas',minutes:'minit tidak aktif',lastLogin:'Log masuk terakhir'},edit:{title:'✏️ Edit',save:'💾 Simpan',cancel:'Batal',amtLabel:'Amaun (RM)',notaLabel:'Nota',dateLabel:'📅 Tarikh'},msg:{added:'✅ Ditambah',deleted:'🗑️ Dipadam',updated:'✅ Dikemaskini',exported:'✅ Dieksport',imported:'✅ Import berjaya',reset:'🗑️ Reset selesai',invalidFile:'⚠️ Fail tidak sah',enterAmount:'⚠️ Masukkan amaun',notaRequired:'⚠️ Nota WAJIB',enterName:'⚠️ Masukkan nama',alreadyExists:'⚠️ Sudah wujud',confirmDel:'Padam?',confirmDelCat:'Padam kategori?',confirmReset:'⚠️ Padam SEMUA?',confirmSure:'PASTI?',edited:'✅ Dikemaskini'}},
-en:{appTitle:'🏠 Budget Tracker',menuTitle:'🏠 Menu',footerText:'v8.0 • Data in browser',tabs:{dashboard:'Dashboard',pendapatan:'Income',komitmen:'Commitments',perbelanjaan:'Expenses',quickadd:'Quick Add',log:'Log',simulasi:'Savings',carta:'Charts',kategori:'Categories',eksport:'Export'},person:{suami:'Husband',isteri:'Wife',husband:'👨 Husband',wife:'👩 Wife',family:'👨‍👩‍👧‍👦'},dashboard:{title:'📊 Dashboard',incS:'Husband Income',incW:'Wife Income',incF:'Total Income',komS:'Husband Commit.',komW:'Wife Commit.',expS:'Husband Expense',expW:'Wife Expense',balS:'Husband Balance',balW:'Wife Balance',balF:'Family Balance'},health:{title:'🏥 Financial Health',usage:'Usage',status:'Status',danger:'⚠️ DANGER',warning:'⚡ WARNING',healthy:'✅ HEALTHY',income:'Income',commitment:'Commitments',expense:'Expenses',balance:'Balance'},income:{title:'💰 Income',salary:'💼 Net Salary',salaryLabel:'Salary (RM)',totalSalary:'Salary',extra:'🎁 Extra Income',extraTotal:'Extra Income',grandTotal:'💰 TOTAL',expandAll:'📂 Expand',collapseAll:'📁 Collapse',amtLabel:'Amount (RM)',notaLabel:'Notes',notaPlaceholder:'e.g. Bonus',dateLabel:'📅 Date',add:'Add',cancel:'Cancel',noEntries:'No entries',cats:['Gift','Selling','Refund','Others']},kom:{title:'📋 Commitments',hint:'💡 Date can be set manually.',amountLabel:'Amount (RM)',notaLabel:'Notes',notaPlaceholder:'e.g. Maybank',dateLabel:'📅 Date',updated:'Updated',total:'📋 TOTAL COMMITMENTS',expandAll:'📂 Expand',collapseAll:'📁 Collapse'},exp:{title:'🛒 Expenses',amountLabel:'Amount (RM)',notaLabel:'Notes',notaPlaceholder:'e.g. Shell',dateLabel:'📅 Date',add:'Add',cancel:'Cancel',total:'🛒 TOTAL EXPENSES',expandAll:'📂 Expand',collapseAll:'📁 Collapse',noEntries:'No entries'},quick:{title:'⚡ Quick Add',catLabel:'Category',amountLabel:'Amount (RM)',notaLabel:'Notes (REQUIRED)',notaPlaceholder:'e.g. Petronas',dateLabel:'📅 Date',addBtn:'⚡ Add',resetBtn:'🔄 Reset',shortTitle:'🔖 Shortcuts',shortDesc:'Click to add:',shorts:[{l:'☕ Coffee RM5',n:'Coffee'},{l:'🍔 Meal RM15',n:'Meal'},{l:'⛽ Fuel RM50',n:'Fuel'},{l:'⛽ RM100',n:'Full Tank'},{l:'🛒 Grocery RM50',n:'Grocery'},{l:'📦 Online RM30',n:'Online'}]},log:{title:'📝 Log',filterAll:'📋 All',filterInc:'🎁 Extra',filterKom:'📋 Commit.',filterExp:'🛒 Expense',totalInc:'Extra',totalKom:'Commit.',totalExp:'Expense',noRecord:'No records',thType:'Type',thWho:'Who',thCat:'Category',thAmt:'Amount',thNota:'Notes',thDate:'Date',thTime:'Time',badgeInc:'🎁 Extra',badgeKom:'📋 Commit.',badgeExp:'🛒 Expense',showMore:'More',showLess:'Less',showing:'Showing',of:'/',records:'records'},sim:{title:'💡 Savings',desc:'✅ Tick to calculate',noData:'No data',savLabel:'💰 Savings'},chart:{title:'📈 Charts',pieTitle:'Expenses',barTitle:'Husband vs Wife',lineTitle:'Trend Jan-Dec',income:'Income',spending:'Spending',balance:'Balance'},cat:{titleKom:'⚙️ Commitment Cat.',titleExp:'⚙️ Expense Cat.',placeholder:'New category',addBtn:'+ Add',editPrompt:'Edit:'},exportTab:{title:'📤 Export',desc:'Export with dates & notes.',manageTitle:'🔄 Data',backup:'💾 Backup',import:'📂 Import',resetAll:'🗑️ Reset',recoverBtn:'🔄 Recover'},security:{title:'🔐 Security',changePw:'🔑 Change Password',lockNow:'🔒 Lock Now',autoLock:'Auto-lock after',minutes:'min inactive',lastLogin:'Last login'},edit:{title:'✏️ Edit',save:'💾 Save',cancel:'Cancel',amtLabel:'Amount (RM)',notaLabel:'Notes',dateLabel:'📅 Date'},msg:{added:'✅ Added',deleted:'🗑️ Deleted',updated:'✅ Updated',exported:'✅ Exported',imported:'✅ Imported',reset:'🗑️ Reset done',invalidFile:'⚠️ Invalid file',enterAmount:'⚠️ Enter amount',notaRequired:'⚠️ Notes REQUIRED',enterName:'⚠️ Enter name',alreadyExists:'⚠️ Exists',confirmDel:'Delete?',confirmDelCat:'Delete category?',confirmReset:'⚠️ Delete ALL?',confirmSure:'SURE?',edited:'✅ Updated'}}
-};
-
-// ==================== CORE ENGINE (same as v7.1 with renderActiveTab) ====================
+// ==================== CORE ====================
 const MONTHS=['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'];
 const DEF_KOM=['Rumah/Sewa','Kereta','Insurans','Utiliti (Elektrik/Air)','Internet/Telefon','Pinjaman Peribadi','PTPTN','Takaful/Insurans Hayat','Tabungan/ASB','Lain-lain Komitmen'];
 const DEF_EXP=['Makanan & Minuman','Pengangkutan/Minyak','Barangan Dapur','Kesihatan','Pendidikan','Online Shopping','Lain-lain Perbelanjaan'];
@@ -511,15 +377,18 @@ const TAB_IDS=['dashboard','pendapatan','komitmen','perbelanjaan','quickadd','lo
 const TAB_ICONS=['📊','💰','📋','🛒','⚡','📝','💡','📈','⚙️','📤'];
 const SHORT_DATA=[{a:5,c:'Makanan & Minuman'},{a:15,c:'Makanan & Minuman'},{a:50,c:'Pengangkutan/Minyak'},{a:100,c:'Pengangkutan/Minyak'},{a:50,c:'Barangan Dapur'},{a:30,c:'Online Shopping'}];
 let data={},currentMonth='Jan',currentPerson='suami',charts={},activeTab='dashboard',logFilter='semua',lang='bm',logLimit=20,expanded={};
+const L={bm:{appTitle:'🏠 Budget Tracker',menuTitle:'🏠 Menu',footerText:'v9.0 + Cloud Sync',tabs:{dashboard:'Dashboard',pendapatan:'Pendapatan',komitmen:'Komitmen',perbelanjaan:'Perbelanjaan',quickadd:'Quick Add',log:'Log',simulasi:'Simulasi',carta:'Carta',kategori:'Kategori',eksport:'Eksport'},person:{suami:'Suami',isteri:'Isteri',husband:'👨 Suami',wife:'👩 Isteri',family:'👨‍👩‍👧‍👦'},dashboard:{title:'📊 Dashboard',incS:'Pendapatan Suami',incW:'Pendapatan Isteri',incF:'Jumlah Pendapatan',komS:'Komitmen Suami',komW:'Komitmen Isteri',expS:'Belanja Suami',expW:'Belanja Isteri',balS:'Baki Suami',balW:'Baki Isteri',balF:'Baki Keluarga'},health:{title:'🏥 Financial Health',usage:'Penggunaan',status:'Status',danger:'⚠️ BAHAYA',warning:'⚡ AMARAN',healthy:'✅ SIHAT',income:'Pendapatan',commitment:'Komitmen',expense:'Perbelanjaan',balance:'Baki'},income:{title:'💰 Pendapatan',salary:'💼 Gaji Bersih',salaryLabel:'Gaji (RM)',totalSalary:'Gaji',extra:'🎁 Wang Tambahan',extraTotal:'Wang Tambahan',grandTotal:'💰 JUMLAH',expandAll:'📂 Buka',collapseAll:'📁 Tutup',amtLabel:'Amaun (RM)',notaLabel:'Nota',notaPlaceholder:'cth: Bonus',dateLabel:'📅 Tarikh',add:'Tambah',cancel:'Batal',noEntries:'Tiada rekod',cats:['Duit Hadiah','Jual Barang','Pulangan/Refund','Lain-lain']},kom:{title:'📋 Komitmen',hint:'💡 Tarikh boleh dipilih manual.',amountLabel:'Amaun (RM)',notaLabel:'Nota',notaPlaceholder:'cth: Maybank',dateLabel:'📅 Tarikh',updated:'Dikemaskini',total:'📋 JUMLAH KOMITMEN',expandAll:'📂 Buka',collapseAll:'📁 Tutup'},exp:{title:'🛒 Perbelanjaan',amountLabel:'Amaun (RM)',notaLabel:'Nota',notaPlaceholder:'cth: Shell',dateLabel:'📅 Tarikh',add:'Tambah',cancel:'Batal',total:'🛒 JUMLAH BELANJA',expandAll:'📂 Buka',collapseAll:'📁 Tutup',noEntries:'Tiada rekod'},quick:{title:'⚡ Quick Add',catLabel:'Kategori',amountLabel:'Amaun (RM)',notaLabel:'Nota (WAJIB)',notaPlaceholder:'cth: Petronas',dateLabel:'📅 Tarikh',addBtn:'⚡ Tambah',resetBtn:'🔄 Reset',shortTitle:'🔖 Pintasan',shortDesc:'Klik tambah:',shorts:[{l:'☕ Kopi RM5',n:'Kopi'},{l:'🍔 Makan RM15',n:'Makan'},{l:'⛽ Minyak RM50',n:'Minyak'},{l:'⛽ RM100',n:'Penuh'},{l:'🛒 Groceri RM50',n:'Groceri'},{l:'📦 Online RM30',n:'Online'}]},log:{title:'📝 Log',filterAll:'📋 Semua',filterInc:'🎁 Tambahan',filterKom:'📋 Komitmen',filterExp:'🛒 Belanja',totalInc:'Tambahan',totalKom:'Komitmen',totalExp:'Belanja',noRecord:'Tiada rekod',thType:'Jenis',thWho:'Siapa',thCat:'Kategori',thAmt:'Amaun',thNota:'Nota',thDate:'Tarikh',thTime:'Masa',badgeInc:'🎁',badgeKom:'📋',badgeExp:'🛒',showMore:'Lagi',showLess:'Tutup',showing:'',of:'/',records:''},sim:{title:'💡 Simulasi',desc:'✅ Tick untuk kira',noData:'Tiada data',savLabel:'💰 Penjimatan'},chart:{title:'📈 Carta',pieTitle:'Perbelanjaan',barTitle:'Suami vs Isteri',lineTitle:'Trend Jan-Dis',income:'Pendapatan',spending:'Pengeluaran',balance:'Baki'},cat:{titleKom:'⚙️ Kat. Komitmen',titleExp:'⚙️ Kat. Perbelanjaan',placeholder:'Baru',addBtn:'+ Tambah',editPrompt:'Edit:'},exportTab:{title:'📤 Eksport',desc:'Eksport dengan tarikh & nota.',manageTitle:'🔄 Data',backup:'💾 Backup',import:'📂 Import',resetAll:'🗑️ Reset'},cloud:{title:'☁️ Cloud Sync (Firebase)',desc:'Masukkan Firebase config untuk sync data ke cloud.',urlLabel:'Database URL',urlPh:'https://xxx.firebaseio.com',keyLabel:'API Key',keyPh:'AIzaSy...',projLabel:'Project ID',projPh:'budget-xxx',saveBtn:'💾 Simpan & Sync',removeBtn:'🗑️ Buang Config',syncNow:'☁️ Sync Sekarang',pushBtn:'⬆️ Push ke Cloud',pullBtn:'⬇️ Pull dari Cloud',status:'Status',connected:'🟢 Connected',disconnected:'🔴 Disconnected',notSetup:'Belum disetup',lastSync:'Sync terakhir'},security:{title:'🔐 Keselamatan',changePw:'🔑 Tukar Password',lockNow:'🔒 Kunci'},edit:{title:'✏️ Edit',save:'💾 Simpan',cancel:'Batal',amtLabel:'Amaun (RM)',notaLabel:'Nota',dateLabel:'📅 Tarikh'},msg:{added:'✅ Ditambah',deleted:'🗑️ Dipadam',updated:'✅ Dikemaskini',exported:'✅ Dieksport',imported:'✅ Import berjaya',reset:'🗑️ Reset',invalidFile:'⚠️ Fail tidak sah',enterAmount:'⚠️ Masukkan amaun',notaRequired:'⚠️ Nota WAJIB',enterName:'⚠️ Masukkan nama',alreadyExists:'⚠️ Sudah wujud',confirmDel:'Padam?',confirmDelCat:'Padam kategori?',confirmReset:'⚠️ Padam SEMUA?',confirmSure:'PASTI?',edited:'✅ Dikemaskini'}},
+en:{appTitle:'🏠 Budget Tracker',menuTitle:'🏠 Menu',footerText:'v9.0 + Cloud Sync',tabs:{dashboard:'Dashboard',pendapatan:'Income',komitmen:'Commitments',perbelanjaan:'Expenses',quickadd:'Quick Add',log:'Log',simulasi:'Savings',carta:'Charts',kategori:'Categories',eksport:'Export'},person:{suami:'Husband',isteri:'Wife',husband:'👨 Husband',wife:'👩 Wife',family:'👨‍👩‍👧‍👦'},dashboard:{title:'📊 Dashboard',incS:'Husband Income',incW:'Wife Income',incF:'Total Income',komS:'Husband Commit.',komW:'Wife Commit.',expS:'Husband Expense',expW:'Wife Expense',balS:'Husband Balance',balW:'Wife Balance',balF:'Family Balance'},health:{title:'🏥 Financial Health',usage:'Usage',status:'Status',danger:'⚠️ DANGER',warning:'⚡ WARNING',healthy:'✅ HEALTHY',income:'Income',commitment:'Commitments',expense:'Expenses',balance:'Balance'},income:{title:'💰 Income',salary:'💼 Salary',salaryLabel:'Salary (RM)',totalSalary:'Salary',extra:'🎁 Extra',extraTotal:'Extra Income',grandTotal:'💰 TOTAL',expandAll:'📂 Expand',collapseAll:'📁 Collapse',amtLabel:'Amount (RM)',notaLabel:'Notes',notaPlaceholder:'e.g. Bonus',dateLabel:'📅 Date',add:'Add',cancel:'Cancel',noEntries:'No entries',cats:['Gift','Selling','Refund','Others']},kom:{title:'📋 Commitments',hint:'💡 Date can be set manually.',amountLabel:'Amount (RM)',notaLabel:'Notes',notaPlaceholder:'e.g. Maybank',dateLabel:'📅 Date',updated:'Updated',total:'📋 TOTAL',expandAll:'📂 Expand',collapseAll:'📁 Collapse'},exp:{title:'🛒 Expenses',amountLabel:'Amount (RM)',notaLabel:'Notes',notaPlaceholder:'e.g. Shell',dateLabel:'📅 Date',add:'Add',cancel:'Cancel',total:'🛒 TOTAL',expandAll:'📂 Expand',collapseAll:'📁 Collapse',noEntries:'No entries'},quick:{title:'⚡ Quick Add',catLabel:'Category',amountLabel:'Amount (RM)',notaLabel:'Notes (REQ)',notaPlaceholder:'e.g. Petronas',dateLabel:'📅 Date',addBtn:'⚡ Add',resetBtn:'🔄 Reset',shortTitle:'🔖 Shortcuts',shortDesc:'Click to add:',shorts:[{l:'☕ Coffee RM5',n:'Coffee'},{l:'🍔 Meal RM15',n:'Meal'},{l:'⛽ Fuel RM50',n:'Fuel'},{l:'⛽ RM100',n:'Full'},{l:'🛒 Grocery RM50',n:'Grocery'},{l:'📦 Online RM30',n:'Online'}]},log:{title:'📝 Log',filterAll:'📋 All',filterInc:'🎁 Extra',filterKom:'📋 Commit.',filterExp:'🛒 Expense',totalInc:'Extra',totalKom:'Commit.',totalExp:'Expense',noRecord:'No records',thType:'Type',thWho:'Who',thCat:'Cat.',thAmt:'Amt',thNota:'Notes',thDate:'Date',thTime:'Time',badgeInc:'🎁',badgeKom:'📋',badgeExp:'🛒',showMore:'More',showLess:'Less',showing:'',of:'/',records:''},sim:{title:'💡 Savings',desc:'✅ Tick to calculate',noData:'No data',savLabel:'💰 Savings'},chart:{title:'📈 Charts',pieTitle:'Expenses',barTitle:'Husband vs Wife',lineTitle:'Trend Jan-Dec',income:'Income',spending:'Spending',balance:'Balance'},cat:{titleKom:'⚙️ Commit. Cat.',titleExp:'⚙️ Expense Cat.',placeholder:'New',addBtn:'+ Add',editPrompt:'Edit:'},exportTab:{title:'📤 Export',desc:'Export with dates & notes.',manageTitle:'🔄 Data',backup:'💾 Backup',import:'📂 Import',resetAll:'🗑️ Reset'},cloud:{title:'☁️ Cloud Sync (Firebase)',desc:'Enter Firebase config to sync data.',urlLabel:'Database URL',urlPh:'https://xxx.firebaseio.com',keyLabel:'API Key',keyPh:'AIzaSy...',projLabel:'Project ID',projPh:'budget-xxx',saveBtn:'💾 Save & Sync',removeBtn:'🗑️ Remove Config',syncNow:'☁️ Sync Now',pushBtn:'⬆️ Push to Cloud',pullBtn:'⬇️ Pull from Cloud',status:'Status',connected:'🟢 Connected',disconnected:'🔴 Disconnected',notSetup:'Not setup',lastSync:'Last sync'},security:{title:'🔐 Security',changePw:'🔑 Change PW',lockNow:'🔒 Lock'},edit:{title:'✏️ Edit',save:'💾 Save',cancel:'Cancel',amtLabel:'Amount (RM)',notaLabel:'Notes',dateLabel:'📅 Date'},msg:{added:'✅ Added',deleted:'🗑️ Deleted',updated:'✅ Updated',exported:'✅ Exported',imported:'✅ Imported',reset:'🗑️ Reset',invalidFile:'⚠️ Invalid',enterAmount:'⚠️ Amount',notaRequired:'⚠️ Notes REQ',enterName:'⚠️ Name',alreadyExists:'⚠️ Exists',confirmDel:'Delete?',confirmDelCat:'Delete cat?',confirmReset:'⚠️ Delete ALL?',confirmSure:'SURE?',edited:'✅ Updated'}}};
+
 function T(){return L[lang]}
 function gid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,6)}
 function todayISO(){return new Date().toISOString().split('T')[0]}
 function nowTime(){let d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')}
-function isoToDisplay(iso){if(!iso||iso==='-')return'-';let p=iso.split('-');if(p.length===3)return p[2]+'/'+p[1]+'/'+p[0];return iso}
-function displayToISO(dd){if(!dd||dd==='-')return'';let p=dd.split('/');if(p.length===3)return p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0');return''}
+function isoToDisplay(iso){if(!iso||iso==='-')return'-';let p=iso.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:iso}
+function displayToISO(dd){if(!dd||dd==='-')return'';let p=dd.split('/');return p.length===3?p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'):''}
 function makeStamp(iso){return{date:isoToDisplay(iso||todayISO()),time:nowTime(),ts:Date.now()}}
 function migrateKom(o){if(typeof o==='number')return{amount:o,nota:'',date:'',time:'',ts:0};if(typeof o==='object'&&o!==null){o.amount=o.amount||0;o.nota=o.nota||'';o.date=o.date||'';o.time=o.time||'';o.ts=o.ts||0;return o}return{amount:0,nota:'',date:'',time:'',ts:0}}
-function migrateWT(o){if(typeof o==='number')return o>0?[{id:gid(),amount:o,nota:'Migrated',date:'',time:'',ts:0}]:[];if(Array.isArray(o))return o;return[]}
+function migrateWT(o){if(typeof o==='number')return o>0?[{id:gid(),amount:o,nota:'Migrated',date:'',time:'',ts:0}]:[];return Array.isArray(o)?o:[]}
 function initMonth(m){if(!data.months)data.months={};let isNew=!data.months[m];if(isNew)data.months[m]={suami:newPerson(),isteri:newPerson()};let md=data.months[m];['suami','isteri'].forEach(p=>{if(!md[p])md[p]=newPerson();if(!md[p].wangTambahan)md[p].wangTambahan={};WT_KEYS.forEach(w=>{md[p].wangTambahan[w]=migrateWT(md[p].wangTambahan[w])});if(!md[p].komitmen)md[p].komitmen={};data.categories.komitmen.forEach(k=>{if(md[p].komitmen[k]===undefined)md[p].komitmen[k]={amount:0,nota:'',date:'',time:'',ts:0};else md[p].komitmen[k]=migrateKom(md[p].komitmen[k])});if(!md[p].perbelanjaan)md[p].perbelanjaan={};data.categories.perbelanjaan.forEach(c=>{if(!md[p].perbelanjaan[c])md[p].perbelanjaan[c]=[]})});if(isNew)saveData()}
 function newPerson(){let p={gaji:0,wangTambahan:{},komitmen:{},perbelanjaan:{}};WT_KEYS.forEach(w=>p.wangTambahan[w]=[]);data.categories.komitmen.forEach(k=>p.komitmen[k]={amount:0,nota:'',date:'',time:'',ts:0});data.categories.perbelanjaan.forEach(c=>p.perbelanjaan[c]=[]);return p}
 function gd(p){return data.months[currentMonth]?data.months[currentMonth][p||currentPerson]:null}
@@ -549,66 +418,137 @@ function switchTab(id){activeTab=id;logLimit=20;document.querySelectorAll('.tab-
 function renderActiveTab(){clearTimeout(renderTimr);renderTimr=setTimeout(()=>{let fn={dashboard:renderDashboard,pendapatan:renderPendapatan,komitmen:renderKomitmen,perbelanjaan:renderPerbelanjaan,quickadd:renderQuickAdd,log:renderLog,simulasi:renderSimulasi,carta:renderCarta,kategori:renderKategori,eksport:renderEksport};if(fn[activeTab])fn[activeTab]()},50)}
 function personToggle(cb){let p=T().person;return`<div class="person-toggle"><button class="${currentPerson==='suami'?'active':''}" onclick="currentPerson='suami';${cb||'renderActiveTab()'}">${p.husband}</button><button class="${currentPerson==='isteri'?'active':''}" onclick="currentPerson='isteri';${cb||'renderActiveTab()'}">${p.wife}</button></div>`}
 function changeMonth(m){currentMonth=m;initMonth(m);expanded={};renderActiveTab()}
-function openModal(html){document.getElementById('modalContent').innerHTML=html;document.getElementById('modalOverlay').classList.add('show')}
+function openModal(h){document.getElementById('modalContent').innerHTML=h;document.getElementById('modalOverlay').classList.add('show')}
 function closeModal(){document.getElementById('modalOverlay').classList.remove('show')}
-
 function editEntry(type,person,cat,id){let d=data.months[currentMonth][person];if(!d)return;let entry;if(type==='wt')entry=(d.wangTambahan[cat]||[]).find(e=>e.id===id);else entry=(d.perbelanjaan[cat]||[]).find(e=>e.id===id);if(!entry)return;let E=T().edit,iso=displayToISO(entry.date)||todayISO();openModal(`<h3>${E.title}</h3><div class="form-group" style="margin-bottom:10px"><label>${E.amtLabel}</label><input type="number" id="edit_amt" value="${entry.amount}" step="0.01"></div><div class="form-group" style="margin-bottom:10px"><label>${E.notaLabel}</label><input type="text" id="edit_nota" value="${entry.nota||''}"></div><div class="form-group" style="margin-bottom:10px"><label>${E.dateLabel}</label><input type="date" id="edit_date" value="${iso}"></div><div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">${E.cancel}</button><button class="btn btn-primary" onclick="saveEdit('${type}','${person}','${esc(cat)}','${id}')">${E.save}</button></div>`)}
-function saveEdit(type,person,cat,id){let amt=parseFloat(document.getElementById('edit_amt').value),nota=document.getElementById('edit_nota').value.trim(),dateISO=document.getElementById('edit_date').value;if(!amt||amt<=0){showToast(T().msg.enterAmount);return}if(!nota){showToast(T().msg.notaRequired);return}let d=data.months[currentMonth][person];if(!d)return;let arr=type==='wt'?d.wangTambahan[cat]:d.perbelanjaan[cat];let entry=(arr||[]).find(e=>e.id===id);if(entry){entry.amount=amt;entry.nota=nota;entry.date=isoToDisplay(dateISO);entry.time=nowTime();entry.ts=Date.now()}saveDataNow();closeModal();showToast(T().msg.edited);renderActiveTab()}
-
-function collapseHTML(secId,name,total,count,isIncome,bodyHTML,addBtn){let isOpen=expanded[secId]||false;let hdr=isIncome?'collapse-header income-header':'collapse-header';let tc=isIncome?'collapse-total gold':'collapse-total';let cc=count===0?'collapse-count zero':(isIncome?'collapse-count gold':'collapse-count');return`<div class="collapse-section"><div class="${hdr}" onclick="tog('${secId}')"><div class="collapse-left"><span class="collapse-arrow${isOpen?' open':''}" id="arrow_${secId}">▶</span><span class="collapse-name">${name}</span><span class="${cc}">${count}</span></div><div class="collapse-right"><span class="${tc}">${rm(total)}</span>${addBtn||''}</div></div><div class="collapse-body${isOpen?' open':''}" id="body_${secId}">${bodyHTML}</div></div>`}
-function entryListHTML(entries,type,person,cat){if(entries.length===0)return`<p class="no-entries">${T().exp.noEntries}</p>`;return entries.map(e=>`<div class="entry-item"><span class="ei-amount">${rm(e.amount)}</span><span class="ei-nota">📝 ${e.nota||'-'}</span><span class="ei-date">📅 ${e.date||'-'} ${e.time||''}</span><span class="ei-actions"><button class="btn-edit" onclick="editEntry('${type}','${person}','${esc(cat)}','${e.id}')">✏️</button><button class="btn btn-danger btn-xs" onclick="delEntry('${type}','${person}','${esc(cat)}','${e.id}')">✕</button></span></div>`).join('')}
-function addFormHTML(fid,amtId,notaId,dateId,addFn,cancelFn,labels){return`<div class="add-form" id="${fid}"><div class="af-row"><div class="form-group"><label>${labels.amt}</label><input type="number" id="${amtId}" placeholder="0.00" step="0.01"></div><div class="form-group"><label>${labels.nota}</label><input type="text" id="${notaId}" placeholder="${labels.ph}"></div><div class="form-group"><label>${labels.date}</label><input type="date" id="${dateId}" value="${todayISO()}"></div><div style="display:flex;gap:6px;align-items:end;padding-bottom:2px"><button class="btn btn-primary btn-sm" onclick="${addFn}">${labels.add}</button><button class="btn btn-outline btn-sm" onclick="${cancelFn}">${labels.cancel}</button></div></div></div>`}
+function saveEdit(type,person,cat,id){let amt=parseFloat(document.getElementById('edit_amt').value),nota=document.getElementById('edit_nota').value.trim(),dt=document.getElementById('edit_date').value;if(!amt||amt<=0){showToast(T().msg.enterAmount);return}if(!nota){showToast(T().msg.notaRequired);return}let d=data.months[currentMonth][person];if(!d)return;let arr=type==='wt'?d.wangTambahan[cat]:d.perbelanjaan[cat];let e=(arr||[]).find(e=>e.id===id);if(e){e.amount=amt;e.nota=nota;e.date=isoToDisplay(dt);e.time=nowTime();e.ts=Date.now()}saveDataNow();closeModal();showToast(T().msg.edited);renderActiveTab()}
+function collapseHTML(secId,name,total,count,isInc,body,addBtn){let o=expanded[secId]||false;let hc=isInc?'collapse-header income-header':'collapse-header';let tc=isInc?'collapse-total gold':'collapse-total';let cc=count===0?'collapse-count zero':(isInc?'collapse-count gold':'collapse-count');return`<div class="collapse-section"><div class="${hc}" onclick="tog('${secId}')"><div class="collapse-left"><span class="collapse-arrow${o?' open':''}" id="arrow_${secId}">▶</span><span class="collapse-name">${name}</span><span class="${cc}">${count}</span></div><div class="collapse-right"><span class="${tc}">${rm(total)}</span>${addBtn||''}</div></div><div class="collapse-body${o?' open':''}" id="body_${secId}">${body}</div></div>`}
+function entryListHTML(entries,type,person,cat){if(!entries.length)return`<p class="no-entries">${T().exp.noEntries}</p>`;return entries.map(e=>`<div class="entry-item"><span class="ei-amount">${rm(e.amount)}</span><span class="ei-nota">📝 ${e.nota||'-'}</span><span class="ei-date">📅 ${e.date||'-'} ${e.time||''}</span><span class="ei-actions"><button class="btn-edit" onclick="editEntry('${type}','${person}','${esc(cat)}','${e.id}')">✏️</button><button class="btn btn-danger btn-xs" onclick="delEntry('${type}','${person}','${esc(cat)}','${e.id}')">✕</button></span></div>`).join('')}
+function addFormHTML(fid,aId,nId,dId,addFn,canFn,lb){return`<div class="add-form" id="${fid}"><div class="af-row"><div class="form-group"><label>${lb.amt}</label><input type="number" id="${aId}" placeholder="0.00" step="0.01"></div><div class="form-group"><label>${lb.nota}</label><input type="text" id="${nId}" placeholder="${lb.ph}"></div><div class="form-group"><label>${lb.date}</label><input type="date" id="${dId}" value="${todayISO()}"></div><div style="display:flex;gap:6px;align-items:end;padding-bottom:2px"><button class="btn btn-primary btn-sm" onclick="${addFn}">${lb.add}</button><button class="btn btn-outline btn-sm" onclick="${canFn}">${lb.cancel}</button></div></div></div>`}
 function delEntry(type,person,cat,id){if(!confirm(T().msg.confirmDel))return;let d=data.months[currentMonth][person];if(!d)return;if(type==='wt'&&Array.isArray(d.wangTambahan[cat]))d.wangTambahan[cat]=d.wangTambahan[cat].filter(e=>e.id!==id);if(type==='exp'&&Array.isArray(d.perbelanjaan[cat]))d.perbelanjaan[cat]=d.perbelanjaan[cat].filter(e=>e.id!==id);saveDataNow();showToast(T().msg.deleted);renderActiveTab()}
-function openForm(secId,fid,focusId){if(!expanded[secId]){expanded[secId]=true;renderActiveTab()}setTimeout(()=>{let f=document.getElementById(fid);if(f){f.classList.add('show');let inp=document.getElementById(focusId);if(inp)inp.focus()}},80)}
+function openForm(secId,fid,focusId){if(!expanded[secId]){expanded[secId]=true;renderActiveTab()}setTimeout(()=>{let f=document.getElementById(fid);if(f){f.classList.add('show');let i=document.getElementById(focusId);if(i)i.focus()}},80)}
 
-// ===== ALL TAB RENDERS (same logic as v7.1, condensed) =====
-function renderDashboard(){let el=document.getElementById('tab-dashboard');if(!el||!el.classList.contains('active'))return;let t=T(),D=t.dashboard,H=t.health;let ps=totalPendapatan('suami'),pi=totalPendapatan('isteri'),pt=ps+pi,ks=totalKomitmen('suami'),ki=totalKomitmen('isteri'),es=totalPerbelanjaan('suami'),ei=totalPerbelanjaan('isteri'),bs=baki('suami'),bi=baki('isteri'),bt=bs+bi;let u=pt>0?pct(ks+ki+es+ei,pt):0,hC=u>=70?'var(--red)':u>=60?'var(--ora)':'var(--g3)',hL=u>=70?H.danger:u>=60?H.warning:H.healthy;el.innerHTML=`<div class="card"><h2>${D.title} — ${currentMonth}</h2><div class="metric-grid"><div class="metric-card green"><div class="mc-icon">👨</div><div class="mc-label">${D.incS}</div><div class="mc-value">${rm(ps)}</div></div><div class="metric-card green"><div class="mc-icon">👩</div><div class="mc-label">${D.incW}</div><div class="mc-value">${rm(pi)}</div></div><div class="metric-card blue"><div class="mc-icon">${t.person.family}</div><div class="mc-label">${D.incF}</div><div class="mc-value">${rm(pt)}</div></div><div class="metric-card orange"><div class="mc-icon">📋</div><div class="mc-label">${D.komS}</div><div class="mc-value">${rm(ks)}</div></div><div class="metric-card orange"><div class="mc-icon">📋</div><div class="mc-label">${D.komW}</div><div class="mc-value">${rm(ki)}</div></div><div class="metric-card red"><div class="mc-icon">🛒</div><div class="mc-label">${D.expS}</div><div class="mc-value">${rm(es)}</div></div><div class="metric-card red"><div class="mc-icon">🛒</div><div class="mc-label">${D.expW}</div><div class="mc-value">${rm(ei)}</div></div><div class="metric-card green"><div class="mc-icon">💵</div><div class="mc-label">${D.balS}</div><div class="mc-value" style="color:${bs<0?'var(--red)':'var(--g1)'}">${rm(bs)}</div></div><div class="metric-card green"><div class="mc-icon">💵</div><div class="mc-label">${D.balW}</div><div class="mc-value" style="color:${bi<0?'var(--red)':'var(--g1)'}">${rm(bi)}</div></div><div class="metric-card ${u>=70?'red':u>=60?'orange':'green'}"><div class="mc-icon">${hL.split(' ')[0]}</div><div class="mc-label">${D.balF}</div><div class="mc-value" style="color:${bt<0?'var(--red)':'var(--g1)'}">${rm(bt)}</div></div></div></div><div class="card"><h2>${H.title}</h2><p style="font-size:.86rem;margin-bottom:8px">${H.usage}: <strong>${u.toFixed(1)}%</strong> | ${H.status}: <strong style="color:${hC}">${hL}</strong></p><div class="health-bar"><div class="health-bar-fill" style="width:${Math.min(u,100)}%;background:${hC}">${u.toFixed(0)}%</div></div><div style="display:flex;justify-content:space-between;font-size:.72rem;color:var(--gr3);margin-top:4px"><span>0%</span><span style="color:var(--ora)">60%</span><span style="color:var(--red)">70%</span><span>100%</span></div><div class="grid-2" style="margin-top:16px"><div><h3>${t.person.husband}</h3><div class="summary-row"><span>${H.income}</span><span>${rm(ps)}</span></div><div class="summary-row"><span>${H.commitment}</span><span style="color:var(--ora)">-${rm(ks)}</span></div><div class="summary-row"><span>${H.expense}</span><span style="color:var(--red)">-${rm(es)}</span></div><div class="summary-row"><span>${H.balance}</span><span>${rm(bs)}</span></div></div><div><h3>${t.person.wife}</h3><div class="summary-row"><span>${H.income}</span><span>${rm(pi)}</span></div><div class="summary-row"><span>${H.commitment}</span><span style="color:var(--ora)">-${rm(ki)}</span></div><div class="summary-row"><span>${H.expense}</span><span style="color:var(--red)">-${rm(ei)}</span></div><div class="summary-row"><span>${H.balance}</span><span>${rm(bi)}</span></div></div></div></div><div class="security-card"><h3>${T().security.title}</h3><div class="lock-info"><span class="li-icon">⏱️</span><span>${T().security.autoLock} <strong>${AUTO_LOCK_MIN} ${T().security.minutes}</strong></span></div><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="showChangePw()">${T().security.changePw}</button><button class="btn btn-outline btn-sm" onclick="lockApp()">${T().security.lockNow}</button></div></div>`}
+// ===== DASHBOARD =====
+function renderDashboard(){let el=document.getElementById('tab-dashboard');if(!el||!el.classList.contains('active'))return;let t=T(),D=t.dashboard,H=t.health;let ps=totalPendapatan('suami'),pi=totalPendapatan('isteri'),pt=ps+pi,ks=totalKomitmen('suami'),ki=totalKomitmen('isteri'),es=totalPerbelanjaan('suami'),ei=totalPerbelanjaan('isteri'),bs=baki('suami'),bi=baki('isteri'),bt=bs+bi;let u=pt>0?pct(ks+ki+es+ei,pt):0,hC=u>=70?'var(--red)':u>=60?'var(--ora)':'var(--g3)',hL=u>=70?H.danger:u>=60?H.warning:H.healthy;el.innerHTML=`<div class="card"><h2>${D.title} — ${currentMonth}</h2><div class="metric-grid"><div class="metric-card green"><div class="mc-icon">👨</div><div class="mc-label">${D.incS}</div><div class="mc-value">${rm(ps)}</div></div><div class="metric-card green"><div class="mc-icon">👩</div><div class="mc-label">${D.incW}</div><div class="mc-value">${rm(pi)}</div></div><div class="metric-card blue"><div class="mc-icon">${t.person.family}</div><div class="mc-label">${D.incF}</div><div class="mc-value">${rm(pt)}</div></div><div class="metric-card orange"><div class="mc-icon">📋</div><div class="mc-label">${D.komS}</div><div class="mc-value">${rm(ks)}</div></div><div class="metric-card orange"><div class="mc-icon">📋</div><div class="mc-label">${D.komW}</div><div class="mc-value">${rm(ki)}</div></div><div class="metric-card red"><div class="mc-icon">🛒</div><div class="mc-label">${D.expS}</div><div class="mc-value">${rm(es)}</div></div><div class="metric-card red"><div class="mc-icon">🛒</div><div class="mc-label">${D.expW}</div><div class="mc-value">${rm(ei)}</div></div><div class="metric-card green"><div class="mc-icon">💵</div><div class="mc-label">${D.balS}</div><div class="mc-value" style="color:${bs<0?'var(--red)':'var(--g1)'}">${rm(bs)}</div></div><div class="metric-card green"><div class="mc-icon">💵</div><div class="mc-label">${D.balW}</div><div class="mc-value" style="color:${bi<0?'var(--red)':'var(--g1)'}">${rm(bi)}</div></div><div class="metric-card ${u>=70?'red':u>=60?'orange':'green'}"><div class="mc-icon">${hL.split(' ')[0]}</div><div class="mc-label">${D.balF}</div><div class="mc-value" style="color:${bt<0?'var(--red)':'var(--g1)'}">${rm(bt)}</div></div></div></div><div class="card"><h2>${H.title}</h2><p style="font-size:.86rem;margin-bottom:8px">${H.usage}: <strong>${u.toFixed(1)}%</strong> | ${H.status}: <strong style="color:${hC}">${hL}</strong></p><div class="health-bar"><div class="health-bar-fill" style="width:${Math.min(u,100)}%;background:${hC}">${u.toFixed(0)}%</div></div><div class="grid-2" style="margin-top:16px"><div><h3>${t.person.husband}</h3><div class="summary-row"><span>${H.income}</span><span>${rm(ps)}</span></div><div class="summary-row"><span>${H.commitment}</span><span style="color:var(--ora)">-${rm(ks)}</span></div><div class="summary-row"><span>${H.expense}</span><span style="color:var(--red)">-${rm(es)}</span></div><div class="summary-row"><span>${H.balance}</span><span>${rm(bs)}</span></div></div><div><h3>${t.person.wife}</h3><div class="summary-row"><span>${H.income}</span><span>${rm(pi)}</span></div><div class="summary-row"><span>${H.commitment}</span><span style="color:var(--ora)">-${rm(ki)}</span></div><div class="summary-row"><span>${H.expense}</span><span style="color:var(--red)">-${rm(ei)}</span></div><div class="summary-row"><span>${H.balance}</span><span>${rm(bi)}</span></div></div></div></div>`}
 
-function renderPendapatan(){let el=document.getElementById('tab-pendapatan');if(!el||!el.classList.contains('active'))return;let t=T(),I=t.income,d=gd();if(!d)return;let html=`<div class="card"><h2>${I.title} — ${currentMonth}</h2>${personToggle()}<h3>${I.salary}</h3><div class="grid-2"><div class="form-group"><label>${I.salaryLabel}</label><input type="number" value="${d.gaji||''}" placeholder="0.00" onchange="updGaji(this.value)" step="0.01"></div><div style="display:flex;align-items:end"><div class="metric-card green" style="width:100%;padding:12px"><div class="mc-label">${I.totalSalary}</div><div class="mc-value">${rm(d.gaji)}</div></div></div></div><h3>${I.extra}</h3><div class="expand-controls"><button onclick="expandGroup('wt_',WT_KEYS)">${I.expandAll}</button><button onclick="collapseGroup('wt_',WT_KEYS)">${I.collapseAll}</button></div>`;WT_KEYS.forEach((w,i)=>{let entries=d.wangTambahan[w]||[],ct=wtCatTotal(currentPerson,w),secId='wt_'+ci(w),fid='wtf_'+w;let addBtn=`<button class="btn-add-circle gold" onclick="event.stopPropagation();openForm('${secId}','${fid}','wtf_amt_${w}')">+</button>`;let body=addFormHTML(fid,'wtf_amt_'+w,'wtf_nota_'+w,'wtf_date_'+w,`addWT('${w}')`,`document.getElementById('${fid}').classList.remove('show')`,{amt:I.amtLabel,nota:I.notaLabel,ph:I.notaPlaceholder,date:I.dateLabel,add:I.add,cancel:I.cancel});body+=entryListHTML(entries,'wt',currentPerson,w);html+=collapseHTML(secId,wtLabel(i),ct,entries.length,true,body,addBtn)});html+=`<div class="total-bar" style="background:var(--g6)"><span class="tb-label">${I.extraTotal}:</span><span class="tb-value" style="color:#e65100">${rm(totalWT())}</span></div><div class="total-bar"><span class="tb-label">${I.grandTotal}:</span><span class="tb-value" style="color:var(--g1)">${rm(totalPendapatan())}</span></div></div>`;el.innerHTML=html}
+// ===== PENDAPATAN =====
+function renderPendapatan(){let el=document.getElementById('tab-pendapatan');if(!el||!el.classList.contains('active'))return;let t=T(),I=t.income,d=gd();if(!d)return;let html=`<div class="card"><h2>${I.title} — ${currentMonth}</h2>${personToggle()}<h3>${I.salary}</h3><div class="grid-2"><div class="form-group"><label>${I.salaryLabel}</label><input type="number" value="${d.gaji||''}" placeholder="0.00" onchange="updGaji(this.value)" step="0.01"></div><div style="display:flex;align-items:end"><div class="metric-card green" style="width:100%;padding:12px"><div class="mc-label">${I.totalSalary}</div><div class="mc-value">${rm(d.gaji)}</div></div></div></div><h3>${I.extra}</h3><div class="expand-controls"><button onclick="expandGroup('wt_',WT_KEYS)">${I.expandAll}</button><button onclick="collapseGroup('wt_',WT_KEYS)">${I.collapseAll}</button></div>`;WT_KEYS.forEach((w,i)=>{let entries=d.wangTambahan[w]||[],ct=wtCatTotal(currentPerson,w),secId='wt_'+ci(w),fid='wtf_'+w;let ab=`<button class="btn-add-circle gold" onclick="event.stopPropagation();openForm('${secId}','${fid}','wtf_amt_${w}')">+</button>`;let body=addFormHTML(fid,'wtf_amt_'+w,'wtf_nota_'+w,'wtf_date_'+w,`addWT('${w}')`,`document.getElementById('${fid}').classList.remove('show')`,{amt:I.amtLabel,nota:I.notaLabel,ph:I.notaPlaceholder,date:I.dateLabel,add:I.add,cancel:I.cancel});body+=entryListHTML(entries,'wt',currentPerson,w);html+=collapseHTML(secId,wtLabel(i),ct,entries.length,true,body,ab)});html+=`<div class="total-bar" style="background:var(--g6)"><span class="tb-label">${I.extraTotal}:</span><span class="tb-value" style="color:#e65100">${rm(totalWT())}</span></div><div class="total-bar"><span class="tb-label">${I.grandTotal}:</span><span class="tb-value" style="color:var(--g1)">${rm(totalPendapatan())}</span></div></div>`;el.innerHTML=html}
 function updGaji(v){let d=gd();if(d){d.gaji=parseFloat(v)||0;saveData();renderActiveTab()}}
-function addWT(key){let amt=parseFloat(document.getElementById('wtf_amt_'+key).value),nota=document.getElementById('wtf_nota_'+key).value.trim(),dateVal=document.getElementById('wtf_date_'+key).value||todayISO();if(!amt||amt<=0){showToast(T().msg.enterAmount);return}if(!nota){showToast(T().msg.notaRequired);return}let d=gd();if(!d)return;if(!Array.isArray(d.wangTambahan[key]))d.wangTambahan[key]=[];let s=makeStamp(dateVal);d.wangTambahan[key].push({id:gid(),amount:amt,nota,date:s.date,time:s.time,ts:s.ts});expanded['wt_'+ci(key)]=true;saveDataNow();showToast(T().msg.added);renderActiveTab()}
+function addWT(key){let amt=parseFloat(document.getElementById('wtf_amt_'+key).value),nota=document.getElementById('wtf_nota_'+key).value.trim(),dv=document.getElementById('wtf_date_'+key).value||todayISO();if(!amt||amt<=0){showToast(T().msg.enterAmount);return}if(!nota){showToast(T().msg.notaRequired);return}let d=gd();if(!d)return;if(!Array.isArray(d.wangTambahan[key]))d.wangTambahan[key]=[];let s=makeStamp(dv);d.wangTambahan[key].push({id:gid(),amount:amt,nota,date:s.date,time:s.time,ts:s.ts});expanded['wt_'+ci(key)]=true;saveDataNow();showToast(T().msg.added);renderActiveTab()}
 
+// ===== KOMITMEN =====
 function renderKomitmen(){let el=document.getElementById('tab-komitmen');if(!el||!el.classList.contains('active'))return;let t=T(),K=t.kom,d=gd();if(!d)return;let cats=data.categories.komitmen;let html=`<div class="card"><h2>${K.title} — ${currentMonth}</h2>${personToggle()}<p style="font-size:.82rem;color:var(--gr3);margin-bottom:10px">${K.hint}</p><div class="expand-controls"><button onclick="expandGroup('km_',${JSON.stringify(cats).replace(/"/g,"'")})">${K.expandAll}</button><button onclick="collapseGroup('km_',${JSON.stringify(cats).replace(/"/g,"'")})">${K.collapseAll}</button></div>`;cats.forEach(k=>{let obj=migrateKom(d.komitmen[k]),secId='km_'+ci(k),iso=displayToISO(obj.date)||todayISO();let body=`<div style="padding:4px 0"><div class="kom-fields"><div class="form-group"><label>${K.amountLabel}</label><input type="number" id="${secId}_amt" value="${obj.amount||''}" placeholder="0.00" step="0.01" onchange="updKom('${esc(k)}')"></div><div class="form-group"><label>${K.notaLabel}</label><input type="text" id="${secId}_nota" value="${obj.nota||''}" placeholder="${K.notaPlaceholder}" onchange="updKom('${esc(k)}')"></div><div class="form-group"><label>${K.dateLabel}</label><input type="date" id="${secId}_date" value="${iso}" onchange="updKom('${esc(k)}')"></div></div>${obj.date?`<div class="kom-date-badge">📅 ${K.updated}: ${obj.date} ${obj.time}</div>`:''}${obj.nota?`<div class="kom-nota-display">📝 ${obj.nota}</div>`:''}</div>`;html+=collapseHTML(secId,k,obj.amount,obj.date?'✓':'—',false,body,'')});html+=`<div class="total-bar"><span class="tb-label">${K.total}:</span><span class="tb-value" style="color:var(--ora)">${rm(totalKomitmen())}</span></div></div>`;el.innerHTML=html}
-function updKom(cat){let secId='km_'+ci(cat),amt=parseFloat(document.getElementById(secId+'_amt').value)||0,nota=document.getElementById(secId+'_nota').value.trim(),dateVal=document.getElementById(secId+'_date').value||todayISO();let d=gd();if(!d)return;let s=makeStamp(dateVal);d.komitmen[cat]={amount:amt,nota,date:s.date,time:s.time,ts:s.ts};saveData();showToast(T().msg.updated)}
+function updKom(cat){let sid='km_'+ci(cat),amt=parseFloat(document.getElementById(sid+'_amt').value)||0,nota=document.getElementById(sid+'_nota').value.trim(),dv=document.getElementById(sid+'_date').value||todayISO();let d=gd();if(!d)return;let s=makeStamp(dv);d.komitmen[cat]={amount:amt,nota,date:s.date,time:s.time,ts:s.ts};saveData();showToast(T().msg.updated)}
 
-function renderPerbelanjaan(){let el=document.getElementById('tab-perbelanjaan');if(!el||!el.classList.contains('active'))return;let t=T(),E=t.exp,d=gd();if(!d)return;let cats=data.categories.perbelanjaan;let html=`<div class="card"><h2>${E.title} — ${currentMonth}</h2>${personToggle()}<div class="expand-controls"><button onclick="expandGroup('ex_',${JSON.stringify(cats).replace(/"/g,"'")})">${E.expandAll}</button><button onclick="collapseGroup('ex_',${JSON.stringify(cats).replace(/"/g,"'")})">${E.collapseAll}</button></div>`;cats.forEach(cat=>{let entries=d.perbelanjaan[cat]||[],ct=totalExpCat(currentPerson,cat),secId='ex_'+ci(cat),fid='exf_'+ci(cat);let addBtn=`<button class="btn-add-circle" onclick="event.stopPropagation();openForm('${secId}','${fid}','exf_amt_${ci(cat)}')">+</button>`;let body=addFormHTML(fid,'exf_amt_'+ci(cat),'exf_nota_'+ci(cat),'exf_date_'+ci(cat),`addExp('${esc(cat)}','${ci(cat)}')`,`document.getElementById('${fid}').classList.remove('show')`,{amt:E.amountLabel,nota:E.notaLabel,ph:E.notaPlaceholder,date:E.dateLabel,add:E.add,cancel:E.cancel});body+=entryListHTML(entries,'exp',currentPerson,cat);html+=collapseHTML(secId,cat,ct,entries.length,false,body,addBtn)});html+=`<div class="total-bar"><span class="tb-label">${E.total}:</span><span class="tb-value" style="color:var(--red)">${rm(totalPerbelanjaan())}</span></div></div>`;el.innerHTML=html}
-function addExp(cat,catCi){let amt=parseFloat(document.getElementById('exf_amt_'+catCi).value),nota=document.getElementById('exf_nota_'+catCi).value.trim(),dateVal=document.getElementById('exf_date_'+catCi).value||todayISO();if(!amt||amt<=0){showToast(T().msg.enterAmount);return}if(!nota){showToast(T().msg.notaRequired);return}let d=gd();if(!d)return;if(!d.perbelanjaan[cat])d.perbelanjaan[cat]=[];let s=makeStamp(dateVal);d.perbelanjaan[cat].push({id:gid(),amount:amt,nota,date:s.date,time:s.time,ts:s.ts});expanded['ex_'+ci(cat)]=true;saveDataNow();showToast(T().msg.added);renderActiveTab()}
+// ===== PERBELANJAAN =====
+function renderPerbelanjaan(){let el=document.getElementById('tab-perbelanjaan');if(!el||!el.classList.contains('active'))return;let t=T(),E=t.exp,d=gd();if(!d)return;let cats=data.categories.perbelanjaan;let html=`<div class="card"><h2>${E.title} — ${currentMonth}</h2>${personToggle()}<div class="expand-controls"><button onclick="expandGroup('ex_',${JSON.stringify(cats).replace(/"/g,"'")})">${E.expandAll}</button><button onclick="collapseGroup('ex_',${JSON.stringify(cats).replace(/"/g,"'")})">${E.collapseAll}</button></div>`;cats.forEach(cat=>{let entries=d.perbelanjaan[cat]||[],ct=totalExpCat(currentPerson,cat),secId='ex_'+ci(cat),fid='exf_'+ci(cat);let ab=`<button class="btn-add-circle" onclick="event.stopPropagation();openForm('${secId}','${fid}','exf_amt_${ci(cat)}')">+</button>`;let body=addFormHTML(fid,'exf_amt_'+ci(cat),'exf_nota_'+ci(cat),'exf_date_'+ci(cat),`addExp('${esc(cat)}','${ci(cat)}')`,`document.getElementById('${fid}').classList.remove('show')`,{amt:E.amountLabel,nota:E.notaLabel,ph:E.notaPlaceholder,date:E.dateLabel,add:E.add,cancel:E.cancel});body+=entryListHTML(entries,'exp',currentPerson,cat);html+=collapseHTML(secId,cat,ct,entries.length,false,body,ab)});html+=`<div class="total-bar"><span class="tb-label">${E.total}:</span><span class="tb-value" style="color:var(--red)">${rm(totalPerbelanjaan())}</span></div></div>`;el.innerHTML=html}
+function addExp(cat,cci){let amt=parseFloat(document.getElementById('exf_amt_'+cci).value),nota=document.getElementById('exf_nota_'+cci).value.trim(),dv=document.getElementById('exf_date_'+cci).value||todayISO();if(!amt||amt<=0){showToast(T().msg.enterAmount);return}if(!nota){showToast(T().msg.notaRequired);return}let d=gd();if(!d)return;if(!d.perbelanjaan[cat])d.perbelanjaan[cat]=[];let s=makeStamp(dv);d.perbelanjaan[cat].push({id:gid(),amount:amt,nota,date:s.date,time:s.time,ts:s.ts});expanded['ex_'+ci(cat)]=true;saveDataNow();showToast(T().msg.added);renderActiveTab()}
 
-function renderQuickAdd(){let el=document.getElementById('tab-quickadd');if(!el||!el.classList.contains('active'))return;let t=T(),Q=t.quick;el.innerHTML=`<div class="card"><h2>${Q.title}</h2>${personToggle()}<div class="grid-3"><div class="form-group"><label>${Q.catLabel}</label><select id="qa_cat">${data.categories.perbelanjaan.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div><div class="form-group"><label>${Q.amountLabel}</label><input type="number" id="qa_amt" placeholder="0.00" step="0.01"></div><div class="form-group"><label>${Q.dateLabel}</label><input type="date" id="qa_date" value="${todayISO()}"></div></div><div class="form-group" style="margin-top:10px"><label>${Q.notaLabel}</label><input type="text" id="qa_nota" placeholder="${Q.notaPlaceholder}"></div><div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-primary" onclick="doQuickAdd()">${Q.addBtn}</button><button class="btn btn-outline" onclick="document.getElementById('qa_amt').value='';document.getElementById('qa_nota').value='';document.getElementById('qa_date').value=todayISO()">${Q.resetBtn}</button></div></div><div class="card"><h2>${Q.shortTitle}</h2><p style="font-size:.82rem;color:var(--gr3);margin-bottom:12px">${Q.shortDesc}</p><div style="display:flex;flex-wrap:wrap;gap:8px">${Q.shorts.map((s,i)=>`<button class="btn btn-outline btn-sm" onclick="quickShort('${SHORT_DATA[i].c}',${SHORT_DATA[i].a},'${s.n}')">${s.l}</button>`).join('')}</div></div>`}
-function doQuickAdd(){let t=T(),cat=document.getElementById('qa_cat').value,amt=parseFloat(document.getElementById('qa_amt').value),nota=document.getElementById('qa_nota').value.trim(),dateVal=document.getElementById('qa_date').value||todayISO();if(!amt||amt<=0){showToast(t.msg.enterAmount);return}if(!nota){showToast(t.msg.notaRequired);return}let d=gd();if(!d)return;if(!d.perbelanjaan[cat])d.perbelanjaan[cat]=[];let s=makeStamp(dateVal);d.perbelanjaan[cat].push({id:gid(),amount:amt,nota,date:s.date,time:s.time,ts:s.ts});saveDataNow();document.getElementById('qa_amt').value='';document.getElementById('qa_nota').value='';showToast(t.msg.added+' — '+nota);renderActiveTab()}
-function quickShort(cat,amt,nota){let d=gd();if(!d)return;if(!d.perbelanjaan[cat])d.perbelanjaan[cat]=[];let s=makeStamp(todayISO());d.perbelanjaan[cat].push({id:gid(),amount:amt,nota,date:s.date,time:s.time,ts:s.ts});saveDataNow();showToast('✅ '+nota+' '+rm(amt));renderActiveTab()}
+// ===== QUICK ADD =====
+function renderQuickAdd(){let el=document.getElementById('tab-quickadd');if(!el||!el.classList.contains('active'))return;let t=T(),Q=t.quick;el.innerHTML=`<div class="card"><h2>${Q.title}</h2>${personToggle()}<div class="grid-3"><div class="form-group"><label>${Q.catLabel}</label><select id="qa_cat">${data.categories.perbelanjaan.map(c=>`<option value="${c}">${c}</option>`).join('')}</select></div><div class="form-group"><label>${Q.amountLabel}</label><input type="number" id="qa_amt" placeholder="0.00" step="0.01"></div><div class="form-group"><label>${Q.dateLabel}</label><input type="date" id="qa_date" value="${todayISO()}"></div></div><div class="form-group" style="margin-top:10px"><label>${Q.notaLabel}</label><input type="text" id="qa_nota" placeholder="${Q.notaPlaceholder}"></div><div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap"><button class="btn btn-primary" onclick="doQA()">${Q.addBtn}</button><button class="btn btn-outline" onclick="document.getElementById('qa_amt').value='';document.getElementById('qa_nota').value=''">${Q.resetBtn}</button></div></div><div class="card"><h2>${Q.shortTitle}</h2><p style="font-size:.82rem;color:var(--gr3);margin-bottom:12px">${Q.shortDesc}</p><div style="display:flex;flex-wrap:wrap;gap:8px">${Q.shorts.map((s,i)=>`<button class="btn btn-outline btn-sm" onclick="qShort('${SHORT_DATA[i].c}',${SHORT_DATA[i].a},'${s.n}')">${s.l}</button>`).join('')}</div></div>`}
+function doQA(){let t=T(),cat=document.getElementById('qa_cat').value,amt=parseFloat(document.getElementById('qa_amt').value),nota=document.getElementById('qa_nota').value.trim(),dv=document.getElementById('qa_date').value||todayISO();if(!amt||amt<=0){showToast(t.msg.enterAmount);return}if(!nota){showToast(t.msg.notaRequired);return}let d=gd();if(!d)return;if(!d.perbelanjaan[cat])d.perbelanjaan[cat]=[];let s=makeStamp(dv);d.perbelanjaan[cat].push({id:gid(),amount:amt,nota,date:s.date,time:s.time,ts:s.ts});saveDataNow();document.getElementById('qa_amt').value='';document.getElementById('qa_nota').value='';showToast(t.msg.added);renderActiveTab()}
+function qShort(cat,amt,nota){let d=gd();if(!d)return;if(!d.perbelanjaan[cat])d.perbelanjaan[cat]=[];let s=makeStamp(todayISO());d.perbelanjaan[cat].push({id:gid(),amount:amt,nota,date:s.date,time:s.time,ts:s.ts});saveDataNow();showToast('✅ '+nota+' '+rm(amt));renderActiveTab()}
 
+// ===== LOG =====
 function getAllLogs(){let all=[];['suami','isteri'].forEach(p=>{let d=data.months[currentMonth]?data.months[currentMonth][p]:null;if(!d)return;WT_KEYS.forEach((w,i)=>{(d.wangTambahan[w]||[]).forEach(e=>{all.push({type:'wt',person:p,category:wtLabel(i),amount:e.amount,nota:e.nota||'-',date:e.date||'-',time:e.time||'-',ts:e.ts||0,id:e.id,wtKey:w})})});Object.keys(d.komitmen||{}).forEach(cat=>{let obj=migrateKom(d.komitmen[cat]);if(komAmt(obj)>0)all.push({type:'komitmen',person:p,category:cat,amount:obj.amount,nota:obj.nota||'-',date:obj.date||'-',time:obj.time||'-',ts:obj.ts||0,id:'km_'+p+'_'+cat})});Object.keys(d.perbelanjaan||{}).forEach(cat=>{(d.perbelanjaan[cat]||[]).forEach(e=>{all.push({type:'perbelanjaan',person:p,category:cat,amount:e.amount,nota:e.nota||'-',date:e.date||'-',time:e.time||'-',ts:e.ts||0,id:e.id})})})});all.sort((a,b)=>(b.ts||0)-(a.ts||0));return all}
-function renderLog(){let el=document.getElementById('tab-log');if(!el||!el.classList.contains('active'))return;let t=T(),LG=t.log,all=getAllLogs();let filtered=logFilter==='wt'?all.filter(e=>e.type==='wt'):logFilter==='komitmen'?all.filter(e=>e.type==='komitmen'):logFilter==='perbelanjaan'?all.filter(e=>e.type==='perbelanjaan'):all;let tW=filtered.filter(e=>e.type==='wt').reduce((a,e)=>a+(parseFloat(e.amount)||0),0),tK=filtered.filter(e=>e.type==='komitmen').reduce((a,e)=>a+(parseFloat(e.amount)||0),0),tE=filtered.filter(e=>e.type==='perbelanjaan').reduce((a,e)=>a+(parseFloat(e.amount)||0),0);let shown=filtered.slice(0,logLimit),hasMore=filtered.length>logLimit;let cAll=all.length,cW=all.filter(e=>e.type==='wt').length,cK=all.filter(e=>e.type==='komitmen').length,cE=all.filter(e=>e.type==='perbelanjaan').length;let bt=e=>e.type==='wt'?`<span class="badge badge-inc">${LG.badgeInc}</span>`:e.type==='komitmen'?`<span class="badge badge-kom">${LG.badgeKom}</span>`:`<span class="badge badge-exp">${LG.badgeExp}</span>`;let act=e=>{let b='';if(e.type==='perbelanjaan')b=`<button class="btn-edit" onclick="editEntry('exp','${e.person}','${esc(e.category)}','${e.id}')">✏️</button><button class="btn btn-danger btn-xs" onclick="delEntry('exp','${e.person}','${esc(e.category)}','${e.id}')">🗑️</button>`;else if(e.type==='wt')b=`<button class="btn-edit" onclick="editEntry('wt','${e.person}','${e.wtKey}','${e.id}')">✏️</button><button class="btn btn-danger btn-xs" onclick="delEntry('wt','${e.person}','${e.wtKey}','${e.id}')">🗑️</button>`;return b};el.innerHTML=`<div class="card"><h2>${LG.title} — ${currentMonth}</h2><div class="log-filters"><button class="${logFilter==='semua'?'active':''}" onclick="logFilter='semua';logLimit=20;renderLog()">${LG.filterAll} (${cAll})</button><button class="${logFilter==='wt'?'active':''}" onclick="logFilter='wt';logLimit=20;renderLog()">${LG.filterInc} (${cW})</button><button class="${logFilter==='komitmen'?'active':''}" onclick="logFilter='komitmen';logLimit=20;renderLog()">${LG.filterKom} (${cK})</button><button class="${logFilter==='perbelanjaan'?'active':''}" onclick="logFilter='perbelanjaan';logLimit=20;renderLog()">${LG.filterExp} (${cE})</button></div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">${logFilter==='semua'||logFilter==='wt'?`<div class="metric-card blue" style="padding:8px;flex:1;min-width:80px"><div class="mc-label">${LG.totalInc}</div><div class="mc-value" style="font-size:.85rem">${rm(tW)}</div></div>`:''}${logFilter==='semua'||logFilter==='komitmen'?`<div class="metric-card orange" style="padding:8px;flex:1;min-width:80px"><div class="mc-label">${LG.totalKom}</div><div class="mc-value" style="font-size:.85rem">${rm(tK)}</div></div>`:''}${logFilter==='semua'||logFilter==='perbelanjaan'?`<div class="metric-card red" style="padding:8px;flex:1;min-width:80px"><div class="mc-label">${LG.totalExp}</div><div class="mc-value" style="font-size:.85rem">${rm(tE)}</div></div>`:''}</div>${filtered.length===0?`<p class="no-entries">${LG.noRecord}</p>`:`<p style="font-size:.76rem;color:var(--gr3);margin-bottom:8px">${LG.showing} ${shown.length} ${LG.of} ${filtered.length}</p><div class="log-table-wrap"><table class="log-table"><thead><tr><th>${LG.thType}</th><th>${LG.thWho}</th><th>${LG.thCat}</th><th>${LG.thAmt}</th><th>${LG.thNota}</th><th>${LG.thDate}</th><th>${LG.thTime}</th><th></th></tr></thead><tbody>${shown.map(e=>`<tr><td>${bt(e)}</td><td><span class="badge ${e.person==='suami'?'badge-s':'badge-i'}">${e.person==='suami'?'👨':'👩'}</span></td><td>${e.category}</td><td style="font-weight:600;color:${e.type==='wt'?'var(--blu)':e.type==='komitmen'?'var(--ora)':'var(--g2)'}">${rm(e.amount)}</td><td style="font-style:italic">${e.nota}</td><td>${e.date}</td><td>${e.time}</td><td style="white-space:nowrap">${act(e)}</td></tr>`).join('')}</tbody></table></div>${hasMore?`<div class="show-more-bar"><button class="btn btn-outline" onclick="logLimit+=20;renderLog()">⬇️ ${LG.showMore}</button></div>`:''}`}</div>`}
+function renderLog(){let el=document.getElementById('tab-log');if(!el||!el.classList.contains('active'))return;let t=T(),LG=t.log,all=getAllLogs();let filtered=logFilter==='wt'?all.filter(e=>e.type==='wt'):logFilter==='komitmen'?all.filter(e=>e.type==='komitmen'):logFilter==='perbelanjaan'?all.filter(e=>e.type==='perbelanjaan'):all;let shown=filtered.slice(0,logLimit),hasMore=filtered.length>logLimit;let bt=e=>e.type==='wt'?`<span class="badge badge-inc">${LG.badgeInc}</span>`:e.type==='komitmen'?`<span class="badge badge-kom">${LG.badgeKom}</span>`:`<span class="badge badge-exp">${LG.badgeExp}</span>`;let act=e=>{if(e.type==='perbelanjaan')return`<button class="btn-edit" onclick="editEntry('exp','${e.person}','${esc(e.category)}','${e.id}')">✏️</button><button class="btn btn-danger btn-xs" onclick="delEntry('exp','${e.person}','${esc(e.category)}','${e.id}')">🗑️</button>`;if(e.type==='wt')return`<button class="btn-edit" onclick="editEntry('wt','${e.person}','${e.wtKey}','${e.id}')">✏️</button><button class="btn btn-danger btn-xs" onclick="delEntry('wt','${e.person}','${e.wtKey}','${e.id}')">🗑️</button>`;return''};
+el.innerHTML=`<div class="card"><h2>${LG.title} — ${currentMonth}</h2><div class="log-filters"><button class="${logFilter==='semua'?'active':''}" onclick="logFilter='semua';logLimit=20;renderLog()">${LG.filterAll} (${all.length})</button><button class="${logFilter==='wt'?'active':''}" onclick="logFilter='wt';logLimit=20;renderLog()">${LG.filterInc}</button><button class="${logFilter==='komitmen'?'active':''}" onclick="logFilter='komitmen';logLimit=20;renderLog()">${LG.filterKom}</button><button class="${logFilter==='perbelanjaan'?'active':''}" onclick="logFilter='perbelanjaan';logLimit=20;renderLog()">${LG.filterExp}</button></div>${filtered.length===0?`<p class="no-entries">${LG.noRecord}</p>`:`<div class="log-table-wrap"><table class="log-table"><thead><tr><th>${LG.thType}</th><th>${LG.thWho}</th><th>${LG.thCat}</th><th>${LG.thAmt}</th><th>${LG.thNota}</th><th>${LG.thDate}</th><th></th></tr></thead><tbody>${shown.map(e=>`<tr><td>${bt(e)}</td><td><span class="badge ${e.person==='suami'?'badge-s':'badge-i'}">${e.person==='suami'?'👨':'👩'}</span></td><td>${e.category}</td><td style="font-weight:600;color:${e.type==='wt'?'var(--blu)':e.type==='komitmen'?'var(--ora)':'var(--g2)'}">${rm(e.amount)}</td><td style="font-style:italic">${e.nota}</td><td>${e.date}</td><td style="white-space:nowrap">${act(e)}</td></tr>`).join('')}</tbody></table></div>${hasMore?`<div class="show-more-bar"><button class="btn btn-outline" onclick="logLimit+=20;renderLog()">⬇️ ${LG.showMore}</button></div>`:''}`}</div>`}
 
-function renderSimulasi(){let el=document.getElementById('tab-simulasi');if(!el||!el.classList.contains('active'))return;let t=T(),S=t.sim,items=[];['suami','isteri'].forEach(p=>{let d=data.months[currentMonth]?data.months[currentMonth][p]:null;if(!d)return;let lb=p==='suami'?t.person.husband:t.person.wife;Object.keys(d.komitmen||{}).forEach(k=>{let v=komAmt(d.komitmen[k]);if(v>0)items.push({person:lb,type:'Komitmen',name:k,amount:v})});Object.keys(d.perbelanjaan||{}).forEach(cat=>{let x=totalExpCat(p,cat);if(x>0)items.push({person:lb,type:'Belanja',name:cat,amount:x})})});el.innerHTML=`<div class="card"><h2>${S.title} — ${currentMonth}</h2><p style="font-size:.84rem;color:var(--gr3);margin-bottom:14px">${S.desc}</p>${items.length===0?`<p class="no-entries">${S.noData}</p>`:items.map(it=>`<div class="sim-item"><input type="checkbox" class="sim-cb" data-amount="${it.amount}" onchange="calcSim()"><span class="si-name">${it.person} • ${it.type} • ${it.name}</span><span class="si-amt">${rm(it.amount)}</span></div>`).join('')}<div class="sim-result"><div class="sr-label">${S.savLabel}</div><div class="sr-value" id="simTotal">RM 0.00</div></div></div>`}
+// ===== SIMULASI =====
+function renderSimulasi(){let el=document.getElementById('tab-simulasi');if(!el||!el.classList.contains('active'))return;let t=T(),S=t.sim,items=[];['suami','isteri'].forEach(p=>{let d=data.months[currentMonth]?data.months[currentMonth][p]:null;if(!d)return;let lb=p==='suami'?t.person.husband:t.person.wife;Object.keys(d.komitmen||{}).forEach(k=>{let v=komAmt(d.komitmen[k]);if(v>0)items.push({person:lb,name:k,amount:v})});Object.keys(d.perbelanjaan||{}).forEach(cat=>{let x=totalExpCat(p,cat);if(x>0)items.push({person:lb,name:cat,amount:x})})});el.innerHTML=`<div class="card"><h2>${S.title} — ${currentMonth}</h2><p style="font-size:.84rem;color:var(--gr3);margin-bottom:14px">${S.desc}</p>${items.length===0?`<p class="no-entries">${S.noData}</p>`:items.map(it=>`<div class="sim-item"><input type="checkbox" class="sim-cb" data-amount="${it.amount}" onchange="calcSim()"><span class="si-name">${it.person} • ${it.name}</span><span class="si-amt">${rm(it.amount)}</span></div>`).join('')}<div class="sim-result"><div class="sr-label">${S.savLabel}</div><div class="sr-value" id="simTotal">RM 0.00</div></div></div>`}
 function calcSim(){let x=0;document.querySelectorAll('.sim-cb:checked').forEach(cb=>{x+=parseFloat(cb.dataset.amount)||0});document.getElementById('simTotal').textContent=rm(x)}
 
-function renderCarta(){let el=document.getElementById('tab-carta');if(!el||!el.classList.contains('active'))return;let C=T().chart;el.innerHTML=`<div class="card"><h2>${C.title} — ${currentMonth}</h2>${personToggle('renderCarta()')}<div class="grid-2"><div class="chart-container" style="max-height:320px"><canvas id="chartPie"></canvas></div><div class="chart-container" style="max-height:320px"><canvas id="chartBar"></canvas></div></div><div class="chart-container" style="margin-top:20px;max-height:320px"><canvas id="chartLine"></canvas></div></div>`;setTimeout(()=>{drawPie();drawBar();drawLine()},100)}
-function destroyChart(n){if(charts[n]){charts[n].destroy();charts[n]=null}}
-function drawPie(){destroyChart('pie');let d=gd(),t=T();if(!d)return;let cats=data.categories.perbelanjaan,vals=cats.map(c=>totalExpCat(currentPerson,c));let cols=['#1b5e20','#2e7d32','#4caf50','#66bb6a','#81c784','#a5d6a7','#c8e6c9','#388e3c','#43a047','#00695c'];let ctx=document.getElementById('chartPie');if(!ctx)return;charts.pie=new Chart(ctx,{type:'pie',data:{labels:cats,datasets:[{data:vals,backgroundColor:cols}]},options:{responsive:true,maintainAspectRatio:true,plugins:{title:{display:true,text:t.chart.pieTitle,font:{size:12}},legend:{position:'bottom',labels:{font:{size:8},boxWidth:10}}}}})}
-function drawBar(){destroyChart('bar');let ctx=document.getElementById('chartBar'),t=T();if(!ctx)return;charts.bar=new Chart(ctx,{type:'bar',data:{labels:[t.health.income,t.health.commitment,t.health.expense,t.health.balance],datasets:[{label:t.person.husband,data:[totalPendapatan('suami'),totalKomitmen('suami'),totalPerbelanjaan('suami'),baki('suami')],backgroundColor:'#2e7d32'},{label:t.person.wife,data:[totalPendapatan('isteri'),totalKomitmen('isteri'),totalPerbelanjaan('isteri'),baki('isteri')],backgroundColor:'#81c784'}]},options:{responsive:true,maintainAspectRatio:true,plugins:{title:{display:true,text:t.chart.barTitle,font:{size:12}},legend:{position:'bottom',labels:{font:{size:8}}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'RM '+v}}}}})}
-function getMonthTotals(m){let md=data.months[m];if(!md)return{inc:0,exp:0,bal:0};let si=(parseFloat(md.suami?.gaji)||0),ii=(parseFloat(md.isteri?.gaji)||0);WT_KEYS.forEach(w=>{(md.suami?.wangTambahan?.[w]||[]).forEach(e=>si+=(parseFloat(e.amount)||0));(md.isteri?.wangTambahan?.[w]||[]).forEach(e=>ii+=(parseFloat(e.amount)||0))});let se=0,ie=0;Object.values(md.suami?.perbelanjaan||{}).forEach(a=>{if(Array.isArray(a))a.forEach(e=>se+=(parseFloat(e.amount)||0))});Object.values(md.isteri?.perbelanjaan||{}).forEach(a=>{if(Array.isArray(a))a.forEach(e=>ie+=(parseFloat(e.amount)||0))});let sk=Object.values(md.suami?.komitmen||{}).reduce((a,b)=>a+komAmt(b),0),ik=Object.values(md.isteri?.komitmen||{}).reduce((a,b)=>a+komAmt(b),0);return{inc:si+ii,exp:se+ie+sk+ik,bal:(si+ii)-(se+ie+sk+ik)}}
-function drawLine(){destroyChart('line');let ctx=document.getElementById('chartLine'),t=T().chart;if(!ctx)return;let inc=[],exp=[],bal=[];MONTHS.forEach(m=>{let mt=getMonthTotals(m);inc.push(mt.inc);exp.push(mt.exp);bal.push(mt.bal)});charts.line=new Chart(ctx,{type:'line',data:{labels:MONTHS,datasets:[{label:t.income,data:inc,borderColor:'#2e7d32',backgroundColor:'rgba(46,125,50,.1)',fill:true,tension:.3},{label:t.spending,data:exp,borderColor:'#e53935',backgroundColor:'rgba(229,57,53,.1)',fill:true,tension:.3},{label:t.balance,data:bal,borderColor:'#1976d2',backgroundColor:'rgba(25,118,210,.1)',fill:true,tension:.3}]},options:{responsive:true,maintainAspectRatio:true,plugins:{title:{display:true,text:t.lineTitle,font:{size:12}},legend:{position:'bottom',labels:{font:{size:8}}}},scales:{y:{ticks:{callback:v=>'RM '+v}}}}})}
+// ===== CARTA =====
+function renderCarta(){let el=document.getElementById('tab-carta');if(!el||!el.classList.contains('active'))return;let C=T().chart;el.innerHTML=`<div class="card"><h2>${C.title} — ${currentMonth}</h2>${personToggle('renderCarta()')}<div class="grid-2"><div class="chart-container" style="max-height:320px"><canvas id="cPie"></canvas></div><div class="chart-container" style="max-height:320px"><canvas id="cBar"></canvas></div></div><div class="chart-container" style="margin-top:20px;max-height:320px"><canvas id="cLine"></canvas></div></div>`;setTimeout(()=>{dPie();dBar();dLine()},100)}
+function dc(n){if(charts[n]){charts[n].destroy();charts[n]=null}}
+function dPie(){dc('pie');let d=gd(),t=T();if(!d)return;let cats=data.categories.perbelanjaan,vals=cats.map(c=>totalExpCat(currentPerson,c));let cols=['#1b5e20','#2e7d32','#4caf50','#66bb6a','#81c784','#a5d6a7','#c8e6c9','#388e3c','#43a047','#00695c'];let ctx=document.getElementById('cPie');if(!ctx)return;charts.pie=new Chart(ctx,{type:'pie',data:{labels:cats,datasets:[{data:vals,backgroundColor:cols}]},options:{responsive:true,maintainAspectRatio:true,plugins:{title:{display:true,text:t.chart.pieTitle,font:{size:12}},legend:{position:'bottom',labels:{font:{size:8},boxWidth:10}}}}})}
+function dBar(){dc('bar');let ctx=document.getElementById('cBar'),t=T();if(!ctx)return;charts.bar=new Chart(ctx,{type:'bar',data:{labels:[t.health.income,t.health.commitment,t.health.expense,t.health.balance],datasets:[{label:t.person.husband,data:[totalPendapatan('suami'),totalKomitmen('suami'),totalPerbelanjaan('suami'),baki('suami')],backgroundColor:'#2e7d32'},{label:t.person.wife,data:[totalPendapatan('isteri'),totalKomitmen('isteri'),totalPerbelanjaan('isteri'),baki('isteri')],backgroundColor:'#81c784'}]},options:{responsive:true,maintainAspectRatio:true,plugins:{title:{display:true,text:t.chart.barTitle,font:{size:12}},legend:{position:'bottom',labels:{font:{size:8}}}},scales:{y:{beginAtZero:true,ticks:{callback:v=>'RM '+v}}}}})}
+function getMT(m){let md=data.months[m];if(!md)return{i:0,e:0,b:0};let si=parseFloat(md.suami?.gaji)||0,ii=parseFloat(md.isteri?.gaji)||0;WT_KEYS.forEach(w=>{(md.suami?.wangTambahan?.[w]||[]).forEach(e=>si+=(parseFloat(e.amount)||0));(md.isteri?.wangTambahan?.[w]||[]).forEach(e=>ii+=(parseFloat(e.amount)||0))});let se=0,ie=0;Object.values(md.suami?.perbelanjaan||{}).forEach(a=>{if(Array.isArray(a))a.forEach(e=>se+=(parseFloat(e.amount)||0))});Object.values(md.isteri?.perbelanjaan||{}).forEach(a=>{if(Array.isArray(a))a.forEach(e=>ie+=(parseFloat(e.amount)||0))});let sk=Object.values(md.suami?.komitmen||{}).reduce((a,b)=>a+komAmt(b),0),ik=Object.values(md.isteri?.komitmen||{}).reduce((a,b)=>a+komAmt(b),0);return{i:si+ii,e:se+ie+sk+ik,b:(si+ii)-(se+ie+sk+ik)}}
+function dLine(){dc('line');let ctx=document.getElementById('cLine'),t=T().chart;if(!ctx)return;let inc=[],exp=[],bal=[];MONTHS.forEach(m=>{let mt=getMT(m);inc.push(mt.i);exp.push(mt.e);bal.push(mt.b)});charts.line=new Chart(ctx,{type:'line',data:{labels:MONTHS,datasets:[{label:t.income,data:inc,borderColor:'#2e7d32',backgroundColor:'rgba(46,125,50,.1)',fill:true,tension:.3},{label:t.spending,data:exp,borderColor:'#e53935',backgroundColor:'rgba(229,57,53,.1)',fill:true,tension:.3},{label:t.balance,data:bal,borderColor:'#1976d2',backgroundColor:'rgba(25,118,210,.1)',fill:true,tension:.3}]},options:{responsive:true,maintainAspectRatio:true,plugins:{title:{display:true,text:t.lineTitle,font:{size:12}},legend:{position:'bottom',labels:{font:{size:8}}}},scales:{y:{ticks:{callback:v=>'RM '+v}}}}})}
 
-function renderKategori(){let el=document.getElementById('tab-kategori');if(!el||!el.classList.contains('active'))return;let t=T(),C=t.cat;let html=`<div class="card"><h2>${C.titleKom}</h2><div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap"><input type="text" id="newKomCat" placeholder="${C.placeholder}" style="flex:1;min-width:140px;padding:8px 12px;border:1.5px solid var(--gr5);border-radius:8px"><button class="btn btn-primary btn-sm" onclick="addCat('komitmen')">${C.addBtn}</button></div>`;data.categories.komitmen.forEach((c,i)=>{html+=`<div class="cat-list-item"><span class="cli-name">${c}</span><div style="display:flex;gap:6px"><button class="btn btn-warning btn-xs" onclick="editCat('komitmen',${i})">✏️</button><button class="btn btn-danger btn-xs" onclick="delCat('komitmen',${i})">🗑️</button></div></div>`});html+=`</div><div class="card"><h2>${C.titleExp}</h2><div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap"><input type="text" id="newExpCat" placeholder="${C.placeholder}" style="flex:1;min-width:140px;padding:8px 12px;border:1.5px solid var(--gr5);border-radius:8px"><button class="btn btn-primary btn-sm" onclick="addCat('perbelanjaan')">${C.addBtn}</button></div>`;data.categories.perbelanjaan.forEach((c,i)=>{html+=`<div class="cat-list-item"><span class="cli-name">${c}</span><div style="display:flex;gap:6px"><button class="btn btn-warning btn-xs" onclick="editCat('perbelanjaan',${i})">✏️</button><button class="btn btn-danger btn-xs" onclick="delCat('perbelanjaan',${i})">🗑️</button></div></div>`});html+=`</div>`;el.innerHTML=html}
-function addCat(type){let t=T(),input=document.getElementById(type==='komitmen'?'newKomCat':'newExpCat'),name=input.value.trim();if(!name){showToast(t.msg.enterName);return}if(data.categories[type].includes(name)){showToast(t.msg.alreadyExists);return}data.categories[type].push(name);MONTHS.forEach(m=>{if(data.months[m]){['suami','isteri'].forEach(p=>{if(data.months[m][p]){if(type==='komitmen'&&!data.months[m][p].komitmen[name])data.months[m][p].komitmen[name]={amount:0,nota:'',date:'',time:'',ts:0};if(type==='perbelanjaan'&&!data.months[m][p].perbelanjaan[name])data.months[m][p].perbelanjaan[name]=[]}})}});saveDataNow();input.value='';showToast(t.msg.added);renderActiveTab()}
+// ===== KATEGORI =====
+function renderKategori(){let el=document.getElementById('tab-kategori');if(!el||!el.classList.contains('active'))return;let t=T(),C=t.cat;let html=`<div class="card"><h2>${C.titleKom}</h2><div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap"><input type="text" id="nkc" placeholder="${C.placeholder}" style="flex:1;min-width:140px;padding:8px 12px;border:1.5px solid var(--gr5);border-radius:8px"><button class="btn btn-primary btn-sm" onclick="addCat('komitmen')">${C.addBtn}</button></div>`;data.categories.komitmen.forEach((c,i)=>{html+=`<div class="cat-list-item"><span class="cli-name">${c}</span><div style="display:flex;gap:6px"><button class="btn btn-warning btn-xs" onclick="editCat('komitmen',${i})">✏️</button><button class="btn btn-danger btn-xs" onclick="delCat('komitmen',${i})">🗑️</button></div></div>`});html+=`</div><div class="card"><h2>${C.titleExp}</h2><div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap"><input type="text" id="nec" placeholder="${C.placeholder}" style="flex:1;min-width:140px;padding:8px 12px;border:1.5px solid var(--gr5);border-radius:8px"><button class="btn btn-primary btn-sm" onclick="addCat('perbelanjaan')">${C.addBtn}</button></div>`;data.categories.perbelanjaan.forEach((c,i)=>{html+=`<div class="cat-list-item"><span class="cli-name">${c}</span><div style="display:flex;gap:6px"><button class="btn btn-warning btn-xs" onclick="editCat('perbelanjaan',${i})">✏️</button><button class="btn btn-danger btn-xs" onclick="delCat('perbelanjaan',${i})">🗑️</button></div></div>`});html+=`</div>`;el.innerHTML=html}
+function addCat(type){let t=T(),inp=document.getElementById(type==='komitmen'?'nkc':'nec'),name=inp.value.trim();if(!name){showToast(t.msg.enterName);return}if(data.categories[type].includes(name)){showToast(t.msg.alreadyExists);return}data.categories[type].push(name);MONTHS.forEach(m=>{if(data.months[m]){['suami','isteri'].forEach(p=>{if(data.months[m][p]){if(type==='komitmen'&&!data.months[m][p].komitmen[name])data.months[m][p].komitmen[name]={amount:0,nota:'',date:'',time:'',ts:0};if(type==='perbelanjaan'&&!data.months[m][p].perbelanjaan[name])data.months[m][p].perbelanjaan[name]=[]}})}});saveDataNow();inp.value='';showToast(t.msg.added);renderActiveTab()}
 function editCat(type,idx){let t=T(),old=data.categories[type][idx],nw=prompt(t.cat.editPrompt,old);if(!nw||nw.trim()===''||nw.trim()===old)return;nw=nw.trim();if(data.categories[type].includes(nw)){showToast(t.msg.alreadyExists);return}data.categories[type][idx]=nw;MONTHS.forEach(m=>{if(data.months[m]){['suami','isteri'].forEach(p=>{if(data.months[m][p]){if(type==='komitmen'){data.months[m][p].komitmen[nw]=data.months[m][p].komitmen[old]||{amount:0,nota:'',date:'',time:'',ts:0};delete data.months[m][p].komitmen[old]}if(type==='perbelanjaan'){data.months[m][p].perbelanjaan[nw]=data.months[m][p].perbelanjaan[old]||[];delete data.months[m][p].perbelanjaan[old]}}})}});saveDataNow();showToast(t.msg.updated);renderActiveTab()}
 function delCat(type,idx){let t=T(),name=data.categories[type][idx];if(!confirm(t.msg.confirmDelCat))return;data.categories[type].splice(idx,1);MONTHS.forEach(m=>{if(data.months[m]){['suami','isteri'].forEach(p=>{if(data.months[m][p]){delete data.months[m][p].komitmen[name];delete data.months[m][p].perbelanjaan[name]}})}});saveDataNow();showToast(t.msg.deleted);renderActiveTab()}
 
-function renderEksport(){let el=document.getElementById('tab-eksport');if(!el||!el.classList.contains('active'))return;let t=T(),X=t.exportTab;el.innerHTML=`<div class="card"><h2>${X.title} — ${currentMonth}</h2><p style="font-size:.84rem;color:var(--gr3);margin-bottom:16px">${X.desc}</p><div class="export-btn-group"><button class="btn btn-primary" onclick="exportCSV()" style="padding:12px 24px">📄 CSV</button><button class="btn btn-primary" onclick="exportExcel()" style="padding:12px 24px;background:var(--g1)">📊 Excel</button><button class="btn btn-primary" onclick="exportPDF()" style="padding:12px 24px;background:#c62828">📕 PDF</button></div></div><div class="card"><h2>${X.manageTitle}</h2><div style="display:flex;gap:12px;flex-wrap:wrap"><button class="btn btn-outline" onclick="exportAllJSON()">${X.backup}</button><button class="btn btn-outline" onclick="document.getElementById('importFile').click()">${X.import}</button><input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)"><button class="btn btn-danger" onclick="resetAllData()">${X.resetAll}</button></div></div><div class="security-card"><h3>${T().security.title}</h3><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="showChangePw()">${T().security.changePw}</button><button class="btn btn-outline btn-sm" onclick="lockApp()">${T().security.lockNow}</button></div></div>`}
+// ===== EKSPORT + CLOUD SYNC SETTINGS =====
+function renderEksport(){
+let el=document.getElementById('tab-eksport');if(!el||!el.classList.contains('active'))return;
+let t=T(),X=t.exportTab,CL=t.cloud,SE=t.security;
+let cfg=getFbConfig()||{};
+let hasConfig=cfg.databaseURL?true:false;
 
-function getExportRows(){let t=T(),hdr=lang==='bm'?['Siapa','Jenis','Kategori','Amaun','Nota','Tarikh','Masa']:['Who','Type','Category','Amount','Notes','Date','Time'];let rows=[hdr];['suami','isteri'].forEach(p=>{let d=data.months[currentMonth]?data.months[currentMonth][p]:null;if(!d)return;let lb=p==='suami'?t.person.suami:t.person.isteri;rows.push([lb,'Income','Salary',d.gaji||0,'-','-','-']);WT_KEYS.forEach((w,i)=>{(d.wangTambahan[w]||[]).forEach(e=>{rows.push([lb,'Extra',wtLabel(i),e.amount,e.nota||'-',e.date||'-',e.time||'-'])})});Object.keys(d.komitmen||{}).forEach(k=>{let obj=migrateKom(d.komitmen[k]);if(obj.amount>0)rows.push([lb,'Commitment',k,obj.amount,obj.nota||'-',obj.date||'-',obj.time||'-'])});Object.keys(d.perbelanjaan||{}).forEach(cat=>{(d.perbelanjaan[cat]||[]).forEach(e=>{rows.push([lb,'Expense',cat,e.amount,e.nota||'-',e.date||'-',e.time||'-'])})})});return rows}
-function exportCSV(){let rows=getExportRows(),csv=rows.map(r=>r.map(c=>'"'+(c+'').replace(/"/g,'""')+'"').join(',')).join('\n');downloadFile(csv,'budget_'+currentMonth+'.csv','text/csv');showToast(T().msg.exported)}
-function exportExcel(){let rows=getExportRows(),html='<html><head><meta charset="UTF-8"></head><body><table border="1">';rows.forEach((r,i)=>{html+='<tr>';r.forEach(c=>{html+=(i===0?'<th>':'<td>')+c+(i===0?'</th>':'</td>')});html+='</tr>'});html+='</table></body></html>';downloadFile(html,'budget_'+currentMonth+'.xls','application/vnd.ms-excel');showToast(T().msg.exported)}
-function exportPDF(){try{const{jsPDF}=window.jspdf;let doc=new jsPDF('l');doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text('Budget - '+currentMonth,14,20);let rows=getExportRows();doc.autoTable({head:[rows[0]],body:rows.slice(1),startY:28,styles:{fontSize:7,cellPadding:3},headStyles:{fillColor:[46,125,50]},alternateRowStyles:{fillColor:[232,245,233]}});doc.save('budget_'+currentMonth+'.pdf');showToast(T().msg.exported)}catch(e){showToast('⚠️ '+e.message)}}
-function downloadFile(c,f,tp){let b=new Blob([c],{type:tp+';charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;a.click();URL.revokeObjectURL(a.href)}
-function exportAllJSON(){downloadFile(JSON.stringify(data,null,2),'budget_backup.json','application/json');showToast(T().msg.exported)}
-function importJSON(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=function(e){try{let p=JSON.parse(e.target.result);if(p&&p.months){data=p;if(data.lang)lang=data.lang;saveDataNow();initMonth(currentMonth);setLang(lang);renderActiveTab();showToast(T().msg.imported)}else showToast(T().msg.invalidFile)}catch(err){showToast(T().msg.invalidFile)}};r.readAsText(f);ev.target.value=''}
+el.innerHTML=`
+<div class="card"><h2>${X.title} — ${currentMonth}</h2>
+<p style="font-size:.84rem;color:var(--gr3);margin-bottom:16px">${X.desc}</p>
+<div class="export-btn-group">
+<button class="btn btn-primary" onclick="exportCSV()" style="padding:12px 24px">📄 CSV</button>
+<button class="btn btn-primary" onclick="exportExcel()" style="padding:12px 24px;background:var(--g1)">📊 Excel</button>
+<button class="btn btn-primary" onclick="exportPDF()" style="padding:12px 24px;background:#c62828">📕 PDF</button></div></div>
+
+<div class="cloud-card"><h3>${CL.title}</h3>
+<p style="font-size:.82rem;color:#1565c0;margin-bottom:14px">${CL.desc}</p>
+<div class="cloud-status">
+<span class="cs-dot ${fbConnected?'online':'offline'}"></span>
+<span style="font-size:.84rem;font-weight:600">${CL.status}: ${hasConfig?(fbConnected?CL.connected:CL.disconnected):CL.notSetup}</span></div>
+${hasConfig?`
+<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px">
+<button class="btn btn-primary btn-sm" onclick="manualSync()">${CL.syncNow}</button>
+<button class="btn btn-outline btn-sm" onclick="pushToCloud()">${CL.pushBtn}</button>
+<button class="btn btn-outline btn-sm" onclick="pullFromCloud()">${CL.pullBtn}</button>
+<button class="btn btn-danger btn-sm" onclick="removeFbConfig()">${CL.removeBtn}</button></div>
+<p style="font-size:.76rem;color:var(--gr3)">Database: ${cfg.databaseURL||'-'}</p>
+`:`
+<div class="grid-2" style="margin-bottom:10px">
+<div class="form-group"><label>${CL.urlLabel}</label><input type="text" id="fb_url" value="${cfg.databaseURL||''}" placeholder="${CL.urlPh}"></div>
+<div class="form-group"><label>${CL.keyLabel}</label><input type="text" id="fb_key" value="${cfg.apiKey||''}" placeholder="${CL.keyPh}"></div></div>
+<div class="form-group" style="margin-bottom:14px"><label>${CL.projLabel}</label><input type="text" id="fb_proj" value="${cfg.projectId||''}" placeholder="${CL.projPh}"></div>
+<button class="btn btn-primary" onclick="saveFbConfig()">${CL.saveBtn}</button>`}
+</div>
+
+<div class="card"><h2>${X.manageTitle}</h2>
+<div style="display:flex;gap:12px;flex-wrap:wrap">
+<button class="btn btn-outline" onclick="exportAllJSON()">${X.backup}</button>
+<button class="btn btn-outline" onclick="document.getElementById('importFile').click()">${X.import}</button>
+<input type="file" id="importFile" accept=".json" style="display:none" onchange="importJSON(event)">
+<button class="btn btn-danger" onclick="resetAllData()">${X.resetAll}</button></div></div>
+
+<div class="security-card"><h3>${SE.title}</h3>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<button class="btn btn-primary btn-sm" onclick="showChangePw()">${SE.changePw}</button>
+<button class="btn btn-outline btn-sm" onclick="lockApp()">${SE.lockNow}</button></div></div>`}
+
+function saveFbConfig(){
+let url=document.getElementById('fb_url').value.trim();
+let key=document.getElementById('fb_key').value.trim();
+let proj=document.getElementById('fb_proj').value.trim();
+if(!url){showToast('⚠️ Database URL wajib');return}
+setFbConfig({databaseURL:url,apiKey:key,projectId:proj});
+initFirebase();
+setTimeout(()=>{pushToCloud();renderActiveTab()},1000);
+showToast('✅ Firebase config disimpan!');
+}
+function removeFbConfig(){
+if(!confirm('Buang config Firebase?'))return;
+localStorage.removeItem(FB_CONFIG_KEY);
+if(fbApp){try{fbApp.delete()}catch(e){}}
+fbApp=null;fbDb=null;fbRef=null;fbConnected=false;
+updateSyncBadge('offline');
+showToast('🗑️ Config dibuang');renderActiveTab();
+}
+
+function getExportRows(){let t=T(),hdr=['Who','Type','Category','Amount','Notes','Date','Time'];let rows=[hdr];['suami','isteri'].forEach(p=>{let d=data.months[currentMonth]?data.months[currentMonth][p]:null;if(!d)return;let lb=p==='suami'?t.person.suami:t.person.isteri;rows.push([lb,'Income','Salary',d.gaji||0,'-','-','-']);WT_KEYS.forEach((w,i)=>{(d.wangTambahan[w]||[]).forEach(e=>{rows.push([lb,'Extra',wtLabel(i),e.amount,e.nota||'-',e.date||'-',e.time||'-'])})});Object.keys(d.komitmen||{}).forEach(k=>{let obj=migrateKom(d.komitmen[k]);if(obj.amount>0)rows.push([lb,'Commitment',k,obj.amount,obj.nota||'-',obj.date||'-',obj.time||'-'])});Object.keys(d.perbelanjaan||{}).forEach(cat=>{(d.perbelanjaan[cat]||[]).forEach(e=>{rows.push([lb,'Expense',cat,e.amount,e.nota||'-',e.date||'-',e.time||'-'])})})});return rows}
+function exportCSV(){let rows=getExportRows(),csv=rows.map(r=>r.map(c=>'"'+(c+'').replace(/"/g,'""')+'"').join(',')).join('\n');dlFile(csv,'budget_'+currentMonth+'.csv','text/csv');showToast(T().msg.exported)}
+function exportExcel(){let rows=getExportRows(),html='<html><head><meta charset="UTF-8"></head><body><table border="1">';rows.forEach((r,i)=>{html+='<tr>';r.forEach(c=>{html+=(i===0?'<th>':'<td>')+c+(i===0?'</th>':'</td>')});html+='</tr>'});html+='</table></body></html>';dlFile(html,'budget_'+currentMonth+'.xls','application/vnd.ms-excel');showToast(T().msg.exported)}
+function exportPDF(){try{const{jsPDF}=window.jspdf;let doc=new jsPDF('l');doc.setFont('helvetica','bold');doc.setFontSize(16);doc.text('Budget - '+currentMonth,14,20);let rows=getExportRows();doc.autoTable({head:[rows[0]],body:rows.slice(1),startY:28,styles:{fontSize:7,cellPadding:3},headStyles:{fillColor:[46,125,50]}});doc.save('budget_'+currentMonth+'.pdf');showToast(T().msg.exported)}catch(e){showToast('⚠️ '+e.message)}}
+function dlFile(c,f,tp){let b=new Blob([c],{type:tp+';charset=utf-8'}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=f;a.click();URL.revokeObjectURL(a.href)}
+function exportAllJSON(){dlFile(JSON.stringify(data,null,2),'budget_backup.json','application/json');showToast(T().msg.exported)}
+function importJSON(ev){let f=ev.target.files[0];if(!f)return;let r=new FileReader();r.onload=function(e){try{let p=JSON.parse(e.target.result);if(p&&p.months){data=p;if(data.lang)lang=data.lang;saveDataNow();initMonth(currentMonth);setLang(lang);renderActiveTab();pushToCloud();showToast(T().msg.imported)}else showToast(T().msg.invalidFile)}catch(err){showToast(T().msg.invalidFile)}};r.readAsText(f);ev.target.value=''}
 function resetAllData(){let t=T();if(!confirm(t.msg.confirmReset))return;if(!confirm(t.msg.confirmSure))return;localStorage.removeItem(STORE_KEY);localStorage.removeItem(BACKUP_KEY);data={categories:{komitmen:[...DEF_KOM],perbelanjaan:[...DEF_EXP]},months:{},lang};initMonth(currentMonth);saveDataNow();renderActiveTab();showToast(t.msg.reset)}
 function showToast(msg){let x=document.getElementById('toast');x.textContent=msg;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),2500)}
 
-// ===== INIT APP (called after login) =====
+// ===== INIT =====
 function initApp(){
 loadData();
 if(!data.categories)data.categories={komitmen:[...DEF_KOM],perbelanjaan:[...DEF_EXP]};
@@ -619,19 +559,15 @@ document.getElementById('mainContent').innerHTML=TAB_IDS.map(id=>`<div class="ta
 document.getElementById('langBM').classList.toggle('active',lang==='bm');
 document.getElementById('langEN').classList.toggle('active',lang==='en');
 updateHeader();buildDrawerNav();switchTab('dashboard');
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')safeSave()});
-window.addEventListener('beforeunload',()=>safeSave());
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){safeSave();pushToCloud()}});
+window.addEventListener('beforeunload',()=>{safeSave()});
+initFirebase();
 }
 
-// ===== BOOT =====
 window.addEventListener('DOMContentLoaded',()=>{
-let session=getSession();
-let auth=getAuth();
-if(auth&&session&&session.active){
-enterApp();
-}else{
-showLoginPage();
-}
+let session=getSession(),auth=getAuth();
+if(auth&&session&&session.active)enterApp();
+else showLoginPage();
 });
 </script>
 </body>
