@@ -202,7 +202,7 @@ c=decodeKeys(c);
 let lT=data._lastSaved||0,cT=c._cloudTs||0;
 if(cT>lT+3000&&cT!==lastPushTs){
 data=c;data._lastSaved=cT;if(data.lang)lang=data.lang;
-safeSave();initMonth(currentMonth);renderActiveTab();
+safeSave();initMonth(cM);renderActiveTab();
 uBadge('synced');showToast('☁️ Data synced')}
 else{uBadge('synced')}
 });
@@ -211,7 +211,7 @@ console.log('Firebase ready — Sync ID:',cfg.syncId);
 
 function uBadge(s){let el=document.getElementById('syncBadge');if(!el)return;el.className='sync-badge';if(s==='synced'){el.classList.add('synced');el.textContent='☁️ ✅'}else if(s==='syncing'){el.classList.add('syncing');el.textContent='☁️ ...'}else if(s==='online'){el.classList.add('synced');el.textContent='☁️ 🟢'}else if(s==='error'){el.classList.add('error');el.textContent='☁️ ❌'}else{el.classList.add('offline');el.textContent='☁️ —'}}
 function pushToCloud(){if(!fbRef||!fbConn||isSyncing)return;isSyncing=true;uBadge('syncing');let p=encodeKeys(JSON.parse(JSON.stringify(data)));let now=Date.now();p._cloudTs=now;lastPushTs=now;data._lastSaved=now;safeSave();fbRef.set(p).then(()=>{uBadge('synced');isSyncing=false;console.log('Pushed ✅')}).catch(e=>{console.error('Push err:',e.message);uBadge('error');isSyncing=false})}
-function pullFromCloud(){if(!fbRef||isSyncing)return;isSyncing=true;uBadge('syncing');fbRef.once('value').then(s=>{let c=s.val();if(!c||!c.months){isSyncing=false;uBadge('synced');return}c=decodeKeys(c);data=c;data._lastSaved=c._cloudTs||Date.now();if(data.lang)lang=data.lang;safeSave();initMonth(currentMonth);renderActiveTab();uBadge('synced');showToast('☁️ Pulled');isSyncing=false}).catch(e=>{console.error('Pull err:',e);uBadge('error');isSyncing=false})}
+function pullFromCloud(){if(!fbRef||isSyncing)return;isSyncing=true;uBadge('syncing');fbRef.once('value').then(s=>{let c=s.val();if(!c||!c.months){isSyncing=false;uBadge('synced');return}c=decodeKeys(c);data=c;data._lastSaved=c._cloudTs||Date.now();if(data.lang)lang=data.lang;safeSave();initMonth(cM);renderActiveTab();uBadge('synced');showToast('☁️ Pulled');isSyncing=false}).catch(e=>{console.error('Pull err:',e);uBadge('error');isSyncing=false})}
 function schedPush(){clearTimeout(syncTmr);syncTmr=setTimeout(()=>pushToCloud(),3000)}
 function manualSync(){if(!fbRef){showToast('⚠️ Setup Firebase dulu');return}if(!fbConn){showToast('⚠️ Offline');return}pushToCloud();showToast('☁️ Syncing...')}
 
@@ -269,7 +269,7 @@ function d2i(d){if(!d||d==='-')return'';let p=d.split('/');return p.length===3?p
 function stp(i){return{date:i2d(i||tISO()),time:nTm(),ts:Date.now()}}
 function mK(o){if(typeof o==='number')return{amount:o,nota:'',date:'',time:'',ts:0};if(typeof o==='object'&&o){o.amount=o.amount||0;o.nota=o.nota||'';o.date=o.date||'';o.time=o.time||'';o.ts=o.ts||0;return o}return{amount:0,nota:'',date:'',time:'',ts:0}}
 function mW(o){if(typeof o==='number')return o>0?[{id:gid(),amount:o,nota:'',date:'',time:'',ts:0}]:[];return Array.isArray(o)?o:[]}
-// Use cM (currentMonth) and cP (currentPerson) globally
+// Use cM (cM) and cP (cP) globally
 function initMonth(m){if(!data.months)data.months={};let n=!data.months[m];if(n)data.months[m]={suami:newP(),isteri:newP()};let md=data.months[m];['suami','isteri'].forEach(p=>{if(!md[p])md[p]=newP();if(!md[p].wangTambahan)md[p].wangTambahan={};WK.forEach(w=>{md[p].wangTambahan[w]=mW(md[p].wangTambahan[w])});if(!md[p].komitmen)md[p].komitmen={};data.categories.komitmen.forEach(k=>{if(md[p].komitmen[k]===undefined)md[p].komitmen[k]={amount:0,nota:'',date:'',time:'',ts:0};else md[p].komitmen[k]=mK(md[p].komitmen[k])});if(!md[p].perbelanjaan)md[p].perbelanjaan={};data.categories.perbelanjaan.forEach(c=>{if(!md[p].perbelanjaan[c])md[p].perbelanjaan[c]=[]})});if(n)saveData()}
 function newP(){let p={gaji:0,wangTambahan:{},komitmen:{},perbelanjaan:{}};WK.forEach(w=>p.wangTambahan[w]=[]);data.categories.komitmen.forEach(k=>p.komitmen[k]={amount:0,nota:'',date:'',time:'',ts:0});data.categories.perbelanjaan.forEach(c=>p.perbelanjaan[c]=[]);return p}
 // Aliases using global cM/cP
@@ -297,7 +297,7 @@ function closeDrawer(){document.getElementById('drawer').classList.remove('open'
 function bNav(){let tt=T().tabs;document.getElementById('drawerNav').innerHTML=TI.map((id,i)=>`<button onclick="sTab('${id}')" class="${id===aT?'active':''}"><span class="nav-icon">${TX[i]}</span><span>${tt[id]}</span></button>`).join('')}
 function uLbl(){let i=TI.indexOf(aT);document.getElementById('activeTabLabel').innerHTML=TX[i]+' '+T().tabs[TI[i]]}
 function sTab(id){aT=id;lL=20;document.querySelectorAll('.tab-content').forEach(el=>el.classList.remove('active'));let tc=document.getElementById('tab-'+id);if(tc)tc.classList.add('active');bNav();uLbl();closeDrawer();renderActiveTab()}
-// Use cM instead of currentMonth
+// Use cM instead of cM
 function renderActiveTab(){clearTimeout(renTmr);renTmr=setTimeout(()=>{({dashboard:rD,pendapatan:rI,komitmen:rK,perbelanjaan:rX,quickadd:rQ,log:rL,simulasi:rS,carta:rC,kategori:rCat,eksport:rExp})[aT]?.()},50)}
 function pT(cb){let p=T().person;return`<div class="person-toggle"><button class="${cP==='suami'?'active':''}" onclick="cP='suami';${cb||'renderActiveTab()'}">${p.husband}</button><button class="${cP==='isteri'?'active':''}" onclick="cP='isteri';${cb||'renderActiveTab()'}">${p.wife}</button></div>`}
 function changeMonth(m){cM=m;initMonth(m);exp={};renderActiveTab()}
