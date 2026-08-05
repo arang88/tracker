@@ -378,9 +378,7 @@ function showToast(msg){let x=document.getElementById('toast');x.textContent=msg
 
 // ========== INIT ==========
 // Alias cM and cP as globals
-var currentMonth,currentPerson;
-Object.defineProperty(window,'currentMonth',{get:()=>cM,set:v=>{cM=v}});
-Object.defineProperty(window,'currentPerson',{get:()=>cP,set:v=>{cP=v}});
+
 
 function initApp(){
 loadData();
