@@ -89,7 +89,7 @@ en:{appTitle:'🏠 Budget Tracker',menuTitle:'🏠 Menu',footerText:'v11.0',tabs
 
 function TT(){return L[lang]}
 function gid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,6)}
-function tISO(){return new Date().toISOString().split('T')[0]}
+function tISO(){let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 function nTm(){let d=new Date();return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0')}
 function i2d(i){if(!i||i==='-')return'-';let p=i.split('-');return p.length===3?p[2]+'/'+p[1]+'/'+p[0]:i}
 function d2i(d){if(!d||d==='-')return'';let p=d.split('/');return p.length===3?p[2]+'-'+p[1].padStart(2,'0')+'-'+p[0].padStart(2,'0'):''}
