@@ -121,7 +121,7 @@ let savTmr=null,isSaving=false,renTmr=null;
 function safeSave(){if(isSaving)return;isSaving=true;try{let j=JSON.stringify(data);if(!j||j.length<10){isSaving=false;return}let x=localStorage.getItem(DK_KEY);if(x&&x.length>50)localStorage.setItem(BK_KEY,x);localStorage.setItem(DK_KEY,j)}catch(e){}isSaving=false}
 function saveData(){data.lang=lang;data._lastSaved=Date.now();clearTimeout(savTmr);savTmr=setTimeout(()=>{safeSave();schedPush()},300)}
 function saveNow(){data.lang=lang;data._lastSaved=Date.now();safeSave();schedPush()}
-function loadData(){try{let d=localStorage.getItem(DK_KEY);if(d){let p=JSON.parse(d);if(p?.months){data=p;if(data.lang)lang=data.lang;return}}}catch(e){}try{let b=localStorage.getItem(BK_KEY);if(b){let p=JSON.parse(b);if(p?.months){data=p;if(data.lang)lang=data.lang;return}}}catch(e){}data={categories:{komitmen:[...DKC],perbelanjaan:[...DEC]},months:{},lang:'bm'}}
+function loadData(){try{let d=localStorage.getItem(DK_KEY);if(d){let p=JSON.parse(d);if(p?.months){data=p;Object.keys(data.months||{}).forEach(month=>{['suami','isteri'].forEach(person=>{const m=data.months[month][person];if(!m)return;if(!m.wangTambahan)m.wangTambahan={};['gift','sell','refund','other'].forEach(type=>{if(!Array.isArray(m.wangTambahan[type]))m.wangTambahan[type]=[]})})});if(data.lang)lang=data.lang;return}}}catch(e){}try{let b=localStorage.getItem(BK_KEY);if(b){let p=JSON.parse(b);if(p?.months){data=p;if(data.lang)lang=data.lang;return}}}catch(e){}data={categories:{komitmen:[...DKC],perbelanjaan:[...DEC]},months:{},lang:'bm'}}
 
 // ========== CORE ==========
 const MO=['Jan','Feb','Mac','Apr','Mei','Jun','Jul','Ogo','Sep','Okt','Nov','Dis'];
@@ -159,7 +159,7 @@ function tE(p){let d=gd(p);if(!d)return 0;let x=0;Object.values(d.perbelanjaan).
 function tEC(p,c){let d=gd(p);if(!d||!d.perbelanjaan[c])return 0;return d.perbelanjaan[c].reduce((a,e)=>a+(parseFloat(e.amount)||0),0)}
 
 // CARRY FORWARD BALANCE
-function getBawa(p){let mi=MO.indexOf(cM);if(mi<=0)return 0;let total=0;for(let i=0;i<mi;i++){let m=MO[i];let md=data.months[m];if(!md||!md[p])continue;let d=md[p];let inc=parseFloat(d.gaji)||0;WK.forEach(w=>{(d.wangTambahan[w]||[]).forEach(e=>inc+=(parseFloat(e.amount)||0))});let kom=0;Object.values(d.komitmen||{}).forEach(arr=>{if(Array.isArray(arr))arr.forEach(e=>kom+=(parseFloat(e.amount)||0));else kom+=kA(arr)});let ex=0;Object.values(d.perbelanjaan||{}).forEach(arr=>{if(Array.isArray(arr))arr.forEach(e=>ex+=(parseFloat(e.amount)||0))});total+=inc-kom-ex}return total}
+function getBawa(p){let mi=MO.indexOf(cM);if(mi<=0)return 0;let total=0;for(let i=0;i<mi;i++){let m=MO[i];let md=data.months[m];if(!md||!md[p])continue;let d=md[p];let inc=parseFloat(d.gaji)||0;WK.forEach(w=>{((d.wangTambahan||{})[w]||[]).forEach(e=>inc+=(parseFloat(e.amount)||0))});let kom=0;Object.values(d.komitmen||{}).forEach(arr=>{if(Array.isArray(arr))arr.forEach(e=>kom+=(parseFloat(e.amount)||0));else kom+=kA(arr)});let ex=0;Object.values(d.perbelanjaan||{}).forEach(arr=>{if(Array.isArray(arr))arr.forEach(e=>ex+=(parseFloat(e.amount)||0))});total+=inc-kom-ex}return total}
 function bal(p){return tI(p)+getBawa(p)-tK(p)-tE(p)}
 function rm(v){return'RM '+(parseFloat(v)||0).toFixed(2)}
 function pct(v,x){return x?((v/x)*100):0}
